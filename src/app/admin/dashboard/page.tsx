@@ -9,6 +9,8 @@ export const metadata = {
   description: 'TheNutriDry admin dashboard',
 };
 
+export const dynamic = 'force-dynamic';
+
 // Loading component for Suspense
 function DashboardLoading() {
   return (
