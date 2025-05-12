@@ -69,7 +69,7 @@ export default function ProductForm({ initialData = {}, isEditing = false }: Pro
     description: initialData.description || '',
     longDescription: initialData.longDescription || '',
     price: initialData.price || 0,
-    salePrice: initialData.salePrice || '',
+    salePrice: initialData.salePrice || null, // Change from empty string to null
     category: initialData.category || '',
     stock: initialData.stock || 0,
     bestseller: initialData.bestseller || false,
@@ -85,9 +85,11 @@ export default function ProductForm({ initialData = {}, isEditing = false }: Pro
       ...prev,
       [name]: type === 'checkbox' 
         ? (e.target as HTMLInputElement).checked 
-        : name === 'price' || name === 'salePrice' || name === 'stock' || name === 'rating' || name === 'reviews'
+        : name === 'price' || name === 'stock' || name === 'rating' || name === 'reviews'
           ? Number(value) || 0
-          : value
+          : name === 'salePrice'
+            ? value === '' ? null : Number(value) || null // Handle salePrice specially
+            : value
     }));
   };
   
@@ -190,6 +192,10 @@ export default function ProductForm({ initialData = {}, isEditing = false }: Pro
       // Prepare data for submission
       const productData = {
         ...formData,
+        // Ensure salePrice is a number or null, never a string
+        salePrice: formData.salePrice === '' ? null : 
+                  formData.salePrice === null ? null : 
+                  Number(formData.salePrice) || null,
         image: mainImage || '', // Ensure image is never undefined
         // Format variants to match what the API expects
         variants: variants.map(variant => ({
@@ -241,13 +247,17 @@ export default function ProductForm({ initialData = {}, isEditing = false }: Pro
                 if (errorData.error) {
                   errorMessage = errorData.error;
                 }
+              } else {
+                // Add this condition to handle empty objects
+                console.error('Server returned empty response object');
               }
-            } catch {
+            } catch (jsonError) {
               // If it's not valid JSON, just log the text
-              if (text.trim() !== '') {
-                console.error('Server response (text):', text);
-              }
+              console.error('Server response (text):', text);
             }
+          } else {
+            // Add this condition to handle empty responses
+            console.error('Server returned empty response');
           }
         } catch (parseError) {
           // If we can't even get the text, just continue with the default error message

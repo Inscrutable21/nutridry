@@ -22,9 +22,10 @@ type ProductListProps = {
   products: Product[];
   showActions?: boolean;
   onRefresh?: () => void;
+  onProductsChange?: () => Promise<void>; // Add this line to support the prop used in admin page
 };
 
-export default function ProductList({ products, showActions = true, onRefresh }: ProductListProps) {
+export default function ProductList({ products, showActions = true, onRefresh, onProductsChange }: ProductListProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
@@ -40,7 +41,10 @@ export default function ProductList({ products, showActions = true, onRefresh }:
           throw new Error('Failed to delete product');
         }
 
-        if (onRefresh) {
+        // Use onProductsChange if provided, otherwise fall back to onRefresh or router.refresh
+        if (onProductsChange) {
+          await onProductsChange();
+        } else if (onRefresh) {
           onRefresh();
         } else {
           router.refresh();
@@ -54,6 +58,7 @@ export default function ProductList({ products, showActions = true, onRefresh }:
     }
   };
 
+  // Update the toggleBestseller and toggleFeatured functions similarly
   const toggleBestseller = async (id: string, currentValue: boolean) => {
     try {
       const response = await fetch(`/api/products/${id}`, {
@@ -66,7 +71,9 @@ export default function ProductList({ products, showActions = true, onRefresh }:
         throw new Error('Failed to update product');
       }
 
-      if (onRefresh) {
+      if (onProductsChange) {
+        await onProductsChange();
+      } else if (onRefresh) {
         onRefresh();
       } else {
         router.refresh();
@@ -78,6 +85,7 @@ export default function ProductList({ products, showActions = true, onRefresh }:
   };
 
   const toggleFeatured = async (id: string, currentValue: boolean) => {
+    // Similar changes as toggleBestseller
     try {
       console.log(`Toggling featured for product ${id} from ${currentValue} to ${!currentValue}`);
       const response = await fetch(`/api/products/${id}`, {

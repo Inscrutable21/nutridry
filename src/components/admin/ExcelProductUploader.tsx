@@ -117,7 +117,8 @@ export default function ExcelProductUploader() {
           description: row.description,
           longDescription: row.longDescription || '',
           price: Number(row.price),
-          salePrice: row.salePrice ? Number(row.salePrice) : null,
+          // Fix salePrice handling to ensure it's a number or null, never a string
+          salePrice: row.salePrice ? Number(row.salePrice) || null : null,
           image: row.image || '',
           images: row.additionalImages ? row.additionalImages.split(',').map((img: string) => img.trim()) : [],
           category: row.category,
