@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ProductList from '@/components/admin/ProductList';
 import AdminHeader from '@/components/admin/AdminHeader';
+import ExcelProductUploader from '@/components/admin/ExcelProductUploader';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   const fetchProducts = async () => {
     try {
@@ -69,6 +71,10 @@ export default function ProductsPage() {
     fetchProducts();
   };
 
+  const toggleBulkUpload = () => {
+    setShowBulkUpload(!showBulkUpload);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader />
@@ -76,13 +82,27 @@ export default function ProductsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Products</h1>
-          <Link 
-            href="/admin/products/new" 
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md transition-colors"
-          >
-            Add New Product
-          </Link>
+          <div className="flex space-x-3">
+            <button
+              onClick={toggleBulkUpload}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            >
+              {showBulkUpload ? 'Hide Bulk Upload' : 'Bulk Upload'}
+            </button>
+            <Link 
+              href="/admin/products/new" 
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md transition-colors"
+            >
+              Add New Product
+            </Link>
+          </div>
         </div>
+        
+        {showBulkUpload && (
+          <div className="mb-6">
+            <ExcelProductUploader />
+          </div>
+        )}
         
         <div className="bg-white shadow rounded-lg p-6">
           {isLoading ? (
@@ -100,11 +120,11 @@ export default function ProductsPage() {
                 onClick={handleRetry}
                 className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
               >
-                Try Again
+                Retry
               </button>
             </div>
           ) : (
-            <ProductList products={products} onRefresh={fetchProducts} />
+            <ProductList products={products} onProductsChange={fetchProducts} />
           )}
         </div>
       </main>
