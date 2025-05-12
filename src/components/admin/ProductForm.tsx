@@ -69,7 +69,7 @@ export default function ProductForm({ initialData = {}, isEditing = false }: Pro
     description: initialData.description || '',
     longDescription: initialData.longDescription || '',
     price: initialData.price || 0,
-    salePrice: initialData.salePrice || null, // Change from empty string to null
+    salePrice: initialData.salePrice || '', // Change from null to empty string
     category: initialData.category || '',
     stock: initialData.stock || 0,
     bestseller: initialData.bestseller || false,
@@ -88,7 +88,7 @@ export default function ProductForm({ initialData = {}, isEditing = false }: Pro
         : name === 'price' || name === 'stock' || name === 'rating' || name === 'reviews'
           ? Number(value) || 0
           : name === 'salePrice'
-            ? value === '' ? null : Number(value) || null // Handle salePrice specially
+            ? value === '' ? '' : Number(value) || '' // Handle salePrice as empty string instead of null
             : value
     }));
   };
@@ -190,12 +190,11 @@ export default function ProductForm({ initialData = {}, isEditing = false }: Pro
       console.log('Preparing data...');
       
       // Prepare data for submission
+      // In handleSubmit function
       const productData = {
         ...formData,
-        // Ensure salePrice is a number or null, never a string
-        salePrice: formData.salePrice === '' ? null : 
-                  formData.salePrice === null ? null : 
-                  Number(formData.salePrice) || null,
+        // Convert empty string to null for API
+        salePrice: formData.salePrice === '' ? null : Number(formData.salePrice) || null,
         image: mainImage || '', // Ensure image is never undefined
         // Format variants to match what the API expects
         variants: variants.map(variant => ({
