@@ -4,10 +4,30 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Product } from '@/types' // Make sure to import the Product type
+import { Product } from '@/types/product';
 
-export default function ProductCard({ product }: { product: Product }) {
-  const [isHovered, setIsHovered] = useState(false)
+// Define a more specific variant type to match what's used in the component
+type Variant = {
+  id: string;
+  size: string;
+  price: number;
+  stock: number;
+  originalPrice?: number;
+};
+
+// Extend the Product type to ensure it has all the properties we need
+interface ProductWithVariants extends Product {
+  variants?: Variant[];
+  salePrice?: number;
+  new?: boolean;
+}
+
+type ProductCardProps = {
+  product: ProductWithVariants;
+};
+
+export default function ProductCard({ product }: ProductCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
   
   const handleAddToCart = () => {
     // Format the message with product details
@@ -18,18 +38,21 @@ export default function ProductCard({ product }: { product: Product }) {
     
     // Open WhatsApp in a new tab
     window.open(whatsappUrl, '_blank');
-  }
-  
-  // Get the display price (either base price or "Starting at" for variants)
-  const getDisplayPrice = () => {
-    if (product.sizeVariants && product.sizeVariants.length > 0) {
-      // Find the minimum price among variants
-      const minPrice = Math.min(...product.sizeVariants.map(v => v.price));
-      return `Starting at ₹${minPrice}`;
-    }
-    return `₹${product.price.toFixed(2)}`;
   };
   
+  // Find the minimum price variant if variants exist
+  const getMinPriceVariant = () => {
+    if (product.variants && product.variants.length > 0) {
+      return product.variants.reduce(
+        (prev, current) => (prev.price < current.price ? prev : current),
+        product.variants[0]
+      );
+    }
+    return null;
+  };
+  
+  const minPriceVariant = getMinPriceVariant();
+
   return (
     <div 
       className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
@@ -88,8 +111,27 @@ export default function ProductCard({ product }: { product: Product }) {
             <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
           </div>
           
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-medium text-gray-900">{getDisplayPrice()}</span>
+          <div className="flex items-center justify-between mt-2">
+            <div>
+              {minPriceVariant && minPriceVariant.originalPrice ? (
+                <div className="flex flex-col">
+                  <span className="text-amber-600 font-medium">₹{minPriceVariant.price.toFixed(2)}</span>
+                  <span className="text-gray-500 text-sm line-through">₹{minPriceVariant.originalPrice.toFixed(2)}</span>
+                </div>
+              ) : minPriceVariant ? (
+                <span className="text-amber-600 font-medium">₹{minPriceVariant.price.toFixed(2)}</span>
+              ) : product.salePrice ? (
+                <div className="flex flex-col">
+                  <span className="text-amber-600 font-medium">₹{product.salePrice.toFixed(2)}</span>
+                  <span className="text-gray-500 text-sm line-through">₹{product.price.toFixed(2)}</span>
+                </div>
+              ) : (
+                <span className="text-amber-600 font-medium">₹{product.price.toFixed(2)}</span>
+              )}
+            </div>
+            
+            {/* Add to cart button or other actions */}
+            {/* ... */}
           </div>
         </div>
       </Link>
@@ -104,7 +146,7 @@ export default function ProductCard({ product }: { product: Product }) {
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
           </svg>
-          Contact on WhatsApp
+          Contact Now
         </button>
       </div>
     </div>

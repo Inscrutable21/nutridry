@@ -8,11 +8,18 @@ import { useParams } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
 import { toast } from 'react-hot-toast'
 
-// Define the Product type
+// Add the calculateDiscount function at the top of your component
+const calculateDiscount = (originalPrice: number, currentPrice: number): number => {
+  if (!originalPrice || !currentPrice || originalPrice <= 0) return 0;
+  const discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  return discount;
+};
+
+// Update the Product type to remove salePrice
 type Product = {
   id: string;
   name: string;
-  price: number;
+  price: number; // Keep this for backward compatibility
   image: string;
   category: string;
   rating: number;
@@ -31,9 +38,21 @@ type Product = {
     id: string;
     size: string;
     price: number;
-    stock: number;
+    stock?: number;
+    originalPrice?: number;
   }>;
 }
+
+// Update the cart item type to match your CartContext
+type CartItem = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  variant?: string | null;
+}
+
 export default function ProductPage() {
   const { id } = useParams()
   const [quantity, setQuantity] = useState(1)
@@ -42,6 +61,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedVariant, setSelectedVariant] = useState<number | null>(null)
   
   useEffect(() => {
     const fetchProduct = async () => {
@@ -108,23 +128,84 @@ export default function ProductPage() {
   
   // Direct contact via WhatsApp
   const handleContactNow = () => {
-    const message = `Hello! I'm interested in purchasing: *${product.name}* - Price: ₹${product.price.toFixed(2)}. Quantity: ${quantity}. Please provide more information.`;
+    const currentPrice = product.variants && product.variants.length > 0
+      ? (selectedVariant !== null ? product.variants[selectedVariant].price : product.variants[0].price)
+      : product.price;
+    
+    const variantInfo = product.variants && product.variants.length > 0
+      ? ` (${selectedVariant !== null ? product.variants[selectedVariant].size : product.variants[0].size})`
+      : '';
+      
+    const message = `Hello! I'm interested in purchasing: *${product.name}${variantInfo}* - Price: ₹${currentPrice.toFixed(2)}. Quantity: ${quantity}. Please provide more information.`;
     const whatsappUrl = `https://wa.me/919984001117?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   }
   
   // Add to cart
   const handleAddToCart = () => {
-    addToCart({
+    const currentPrice = product.variants && product.variants.length > 0
+      ? (selectedVariant !== null ? product.variants[selectedVariant].price : product.variants[0].price)
+      : product.price;
+    
+    const variantInfo = product.variants && product.variants.length > 0
+      ? (selectedVariant !== null ? product.variants[selectedVariant].size : product.variants[0].size)
+      : null;
+      
+    const cartItem: CartItem = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: currentPrice,
       quantity: quantity,
-      image: product.image
-    });
+      image: product.image,
+      variant: variantInfo
+    };
+    
+    addToCart(cartItem);
     
     toast.success(`Added ${quantity} ${product.name} to cart`);
   }
+  
+  // Get current price and original price based on selected variant
+  const getCurrentPriceInfo = () => {
+    if (!product) return { 
+      currentPrice: 0, 
+      originalPrice: null, 
+      discount: null, 
+      size: null,
+      discountAmount: 0 
+    };
+    
+    if (product.variants && product.variants.length > 0) {
+      const variant = selectedVariant !== null 
+        ? product.variants[selectedVariant] 
+        : product.variants[0];
+      
+      const discount = variant.originalPrice 
+        ? calculateDiscount(variant.originalPrice, variant.price) 
+        : null;
+        
+      const discountAmount = variant.originalPrice 
+        ? variant.originalPrice - variant.price
+        : 0;
+      
+      return {
+        currentPrice: variant.price,
+        originalPrice: variant.originalPrice || null,
+        discount,
+        size: variant.size,
+        discountAmount
+      };
+    }
+    
+    // Fallback to using the product.price (for backward compatibility)
+    return {
+      currentPrice: product.price,
+      originalPrice: null,
+      discount: null,
+      size: null,
+      discountAmount: 0
+    };
+  }; 
   
   return (
     <div className="pt-24 pb-16">
@@ -153,6 +234,11 @@ export default function ProductPage() {
                     fill
                     className="object-contain"
                     sizes="(max-width: 768px) 100vw, 50vw"
+                    onError={(e) => {
+                      console.error('Image failed to load:', product.image);
+                      // Optionally set a fallback image
+                      e.currentTarget.src = '/placeholder.jpg';
+                    }}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full w-full bg-gray-100">
@@ -194,8 +280,44 @@ export default function ProductPage() {
               <span className="text-sm text-gray-500 ml-2">{product.rating} ({product.reviews} reviews)</span>
             </div>
             
-            <div className="text-2xl font-medium mb-4">₹{product.price.toFixed(2)}</div>
-            
+            <div className="text-2xl font-medium mb-4">
+              {product.variants && product.variants.length > 0 ? (
+                <div>
+                  {selectedVariant !== null ? (
+                    product.variants[selectedVariant].originalPrice ? (
+                      <>
+                        <span className="text-amber-600">₹{product.variants[selectedVariant].price.toFixed(2)}</span>
+                        <span className="text-gray-500 text-xl line-through ml-2">
+                          ₹{product.variants[selectedVariant].originalPrice.toFixed(2)}
+                        </span>
+                        <span className="text-green-600 text-sm ml-2">
+                          {Math.round((1 - product.variants[selectedVariant].price / product.variants[selectedVariant].originalPrice) * 100)}% off
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-amber-600">₹{product.variants[selectedVariant].price.toFixed(2)}</span>
+                    )
+                  ) : (
+                    product.variants[0].originalPrice ? (
+                      <>
+                        <span className="text-amber-600">₹{product.variants[0].price.toFixed(2)}</span>
+                        <span className="text-gray-500 text-xl line-through ml-2">
+                          ₹{product.variants[0].originalPrice.toFixed(2)}
+                        </span>
+                        <span className="text-green-600 text-sm ml-2">
+                          {Math.round((1 - product.variants[0].price / product.variants[0].originalPrice) * 100)}% off
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-amber-600">₹{product.variants[0].price.toFixed(2)}</span>
+                    )
+                  )}
+                </div>
+              ) : (
+                <span className="text-amber-600">₹{product.price.toFixed(2)}</span>
+              )}
+            </div>
+
             <p className="text-gray-700 mb-6">{product.description}</p>
             
             {/* Stock Status */}
@@ -213,27 +335,33 @@ export default function ProductPage() {
               </div>
             </div>
             
-            {/* Size Variants - Add this section */}
+            {/* Size Options - Updated to match the screenshot exactly */}
             {product.variants && product.variants.length > 0 && (
               <div className="mb-6">
-                <h3 className="font-medium mb-3">Size Options</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.variants.map((variant) => (
+                <h3 className="text-lg font-medium mb-3">Size Options</h3>
+                <div className="flex flex-wrap gap-3">
+                  {product.variants.map((variant, index) => (
                     <button
                       key={variant.id}
-                      className="px-4 py-2 border border-gray-300 rounded-md hover:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                      onClick={() => {
-                        // Update price and stock based on selected variant
-                        setProduct({
-                          ...product,
-                          price: variant.price,
-                          stock: variant.stock || product.stock
-                        });
-                      }}
+                      className={`relative px-6 py-4 border rounded-md focus:outline-none ${
+                        selectedVariant === index 
+                          ? 'border-amber-500 bg-amber-50'
+                          : 'border-gray-300 hover:border-amber-300'
+                      }`}
+                      onClick={() => setSelectedVariant(index)}
                     >
                       <div className="flex flex-col items-center">
-                        <span>{variant.size}</span>
-                        <span className="text-sm text-gray-600">₹{variant.price.toFixed(2)}</span>
+                        <span className="text-lg font-medium mb-1">{variant.size}</span>
+                        {variant.originalPrice ? (
+                          <span className="text-amber-600 font-medium">
+                            ₹{variant.price.toFixed(2)}
+                            <span className="block text-sm text-gray-500 line-through">
+                              ₹{variant.originalPrice.toFixed(2)}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-amber-600 font-medium">₹{variant.price.toFixed(2)}</span>
+                        )}
                       </div>
                     </button>
                   ))}

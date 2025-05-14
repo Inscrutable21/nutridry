@@ -1,138 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-type RouteContext = {
-  params: Promise<{
-    id: string;
-  }>;
-};
-
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
-    
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: params.id },
       include: { variants: true },
     });
-
+    
     if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
-
-    return NextResponse.json(product);
+    
+    // Add backward compatibility fields
+    const defaultVariant = product.variants && product.variants.length > 0 
+      ? product.variants[0] 
+      : null;
+    
+    const transformedProduct = {
+      ...product,
+      // Add price and stock from the default variant for backward compatibility
+      price: defaultVariant ? defaultVariant.price : 0,
+      stock: defaultVariant ? defaultVariant.stock : 0,
+      salePrice: null // For backward compatibility
+    };
+    
+    return NextResponse.json(transformedProduct);
   } catch (error) {
     console.error('Error fetching product:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch product' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 });
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
-    
-    const productData = await request.json();
-    const { variants, ...productDetails } = productData;
-
-    // Update product with variants in a transaction with increased timeout
-    const product = await prisma.$transaction(
-      async (tx) => {
-        // Update the product
-        await tx.product.update({
-          where: { id },
-          data: productDetails,
-        });
-
-        // Handle variants if provided
-        if (variants && variants.length > 0) {
-          // Delete existing variants
-          await tx.sizeVariant.deleteMany({
-            where: { productId: id },
-          });
-
-          // Create new variants
-          await tx.sizeVariant.createMany({
-            data: variants.map((variant: { size: string; price: number; stock: number }) => ({
-              ...variant,
-              productId: id,
-            })),
-          });
-        }
-
-        // Return the complete product with variants
-        return tx.product.findUnique({
-          where: { id },
-          include: { variants: true },
-        });
-      },
-      {
-        timeout: 60000, // Increased timeout to 60 seconds (1 minute)
-      }
-    );
-
-    return NextResponse.json(product);
-  } catch (error) {
-    console.error('Error updating product:', error);
-    return NextResponse.json(
-      { error: 'Failed to update product' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PATCH(
-  request: NextRequest,
-  context: RouteContext
-) {
-  try {
-    const { id } = await context.params;
     const data = await request.json();
+    const { variants, ...productDetails } = data;
     
-    await prisma.product.update({
-      where: { id },
-      data,
+    // Update the product
+    const updatedProduct = await prisma.product.update({
+      where: { id: params.id },
+      data: productDetails,
     });
-
-    return NextResponse.json({ success: true });
+    
+    // Handle variants - first delete existing ones
+    await prisma.sizeVariant.deleteMany({
+      where: { productId: params.id },
+    });
+    
+    // Then create new ones
+    if (variants && variants.length > 0) {
+      await prisma.sizeVariant.createMany({
+        data: variants.map((variant: {
+          size: string;
+          price: number;
+          originalPrice?: number;
+          stock: number;
+        }) => ({
+          size: variant.size || '',
+          price: Number(variant.price) || 0,
+          originalPrice: variant.originalPrice ? Number(variant.originalPrice) : null,
+          stock: Number(variant.stock) || 0,
+          productId: params.id,
+        })),
+      });
+    }
+    
+    // Return the updated product with variants
+    const productWithVariants = await prisma.product.findUnique({
+      where: { id: params.id },
+      include: { variants: true },
+    });
+    
+    return NextResponse.json(productWithVariants);
   } catch (error) {
     console.error('Error updating product:', error);
-    return NextResponse.json(
-      { error: 'Failed to update product' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
-    
     // Delete the product (variants will be deleted automatically due to cascade)
     await prisma.product.delete({
-      where: { id },
+      where: { id: params.id },
     });
-
+    
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting product:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete product' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
   }
 }

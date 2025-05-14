@@ -102,13 +102,19 @@ export default function CartPage() {
                           <td className="py-4 px-6">
                             <div className="flex items-center">
                               <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 mr-4">
-                                <Image
-                                  src={item.image}
-                                  alt={item.name}
-                                  width={80}
-                                  height={80}
-                                  className="h-full w-full object-contain object-center"
-                                />
+                                {item.image && item.image.trim() !== "" ? (
+                                  <Image
+                                    src={item.image}
+                                    alt={item.name}
+                                    width={80}
+                                    height={80}
+                                    className="h-full w-full object-cover object-center"
+                                  />
+                                ) : (
+                                  <div className="h-full w-full bg-gray-100 flex items-center justify-center">
+                                    <span className="text-gray-400 text-xs">No image</span>
+                                  </div>
+                                )}
                               </div>
                               <div>
                                 <h3 className="text-base font-medium text-gray-900">{item.name}</h3>

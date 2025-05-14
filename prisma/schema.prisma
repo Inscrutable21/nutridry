@@ -14,36 +14,34 @@ model Product {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   name             String
   description      String
-  longDescription  String?       // Added for detailed product description
-  price            Float
-  salePrice        Float?        // Added optional sale price
+  longDescription  String?       // Detailed product description
   variants         SizeVariant[]
   image            String
-  images           String[]      // Added for additional product images
+  images           String[]      // Additional product images
   category         String
-  rating           Float         @default(0)  // Added default
-  reviews          Int           @default(0)  // Added default
-  stock            Int
+  rating           Float         @default(0)
+  reviews          Int           @default(0)
   bestseller       Boolean       @default(false)
   featured         Boolean       @default(false)
-  benefits         String[]      // Added for product benefits
-  features         String[]      // Added for product features
-  usageSuggestions String[]      // Added for usage suggestions
-  nutritionalInfo  Json?         // Added for nutritional information as key-value pairs
-  specs            Json?         // Added for specifications as key-value pairs
+  benefits         String[]      // Product benefits
+  features         String[]      // Product features
+  usageSuggestions String[]      // Usage suggestions
+  nutritionalInfo  Json?         // Nutritional information as key-value pairs
+  specs            Json?         // Specifications as key-value pairs
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 }
 
 model SizeVariant {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  size      String   // This will store weight information like "1kg", "500g"
-  price     Float    // Price for this specific weight variant
-  stock     Int      @default(0)
-  productId String   @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId     String   @db.ObjectId
+  size          String
+  price         Float
+  originalPrice Float?
+  stock         Int      @default(0)
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 // Removed User model as per your requirements
@@ -55,3 +53,5 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+

@@ -3,6 +3,7 @@ export interface Product {
   id: string;
   name: string;
   price: number;
+  salePrice?: number;
   image: string;
   category: string;
   rating: number;
@@ -21,6 +22,7 @@ export interface Product {
     id: string;
     size: string;
     price: number;
+    originalPrice?: number;
     stock: number;
   }>;
 }
