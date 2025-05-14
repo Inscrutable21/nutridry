@@ -3,11 +3,13 @@ import prisma from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const id = (await params).id;
+    
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { variants: true },
     });
     
@@ -37,21 +39,22 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const id = (await params).id;
     const data = await request.json();
     const { variants, ...productDetails } = data;
     
     // Update the product
     const updatedProduct = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: productDetails,
     });
     
     // Handle variants - first delete existing ones
     await prisma.sizeVariant.deleteMany({
-      where: { productId: params.id },
+      where: { productId: id },
     });
     
     // Then create new ones
@@ -67,14 +70,14 @@ export async function PUT(
           price: Number(variant.price) || 0,
           originalPrice: variant.originalPrice ? Number(variant.originalPrice) : null,
           stock: Number(variant.stock) || 0,
-          productId: params.id,
+          productId: id,
         })),
       });
     }
     
     // Return the updated product with variants
     const productWithVariants = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { variants: true },
     });
     
@@ -87,12 +90,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const id = (await params).id;
     // Delete the product (variants will be deleted automatically due to cascade)
     await prisma.product.delete({
-      where: { id: params.id },
+      where: { id },
     });
     
     return NextResponse.json({ success: true });

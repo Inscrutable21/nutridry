@@ -3,7 +3,30 @@
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import ProductCard from '@/components/products/ProductCard'
-import { Product } from '@/types'
+
+// Update the Product interface to match ProductWithVariants
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+  rating: number;
+  reviews: number;
+  stock: number;
+  bestseller: boolean; // Changed from optional to required
+  featured?: boolean;
+  new?: boolean;
+  description: string; // Changed from optional to required
+  variants?: Array<{
+    id: string;
+    size: string;
+    price: number;
+    stock: number;
+    originalPrice?: number;
+  }>;
+  salePrice?: number;
+}
 
 export default function NewProducts() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -49,7 +72,14 @@ export default function NewProducts() {
         
         const data = await response.json();
         if (data.products && data.products.length > 0) {
-          setProducts(data.products);
+          // Ensure all required properties are set
+          const productsWithDefaults = data.products.map((product: any) => ({
+            ...product,
+            bestseller: product.bestseller === undefined ? false : product.bestseller,
+            description: product.description || '', // Set default empty string for description
+            // Add any other required properties that might be undefined
+          }));
+          setProducts(productsWithDefaults);
           setError(null);
         } else {
           // If no products returned, use fallback data
@@ -132,6 +162,7 @@ export default function NewProducts() {
         rating: 4.5,
         reviews: 24,
         featured: true,
+        bestseller: false, // Explicitly set bestseller
         stock: 15
       },
       {
@@ -144,6 +175,7 @@ export default function NewProducts() {
         rating: 4.8,
         reviews: 32,
         featured: true,
+        bestseller: false, // Explicitly set bestseller
         stock: 20
       },
       {
@@ -156,9 +188,20 @@ export default function NewProducts() {
         rating: 4.2,
         reviews: 18,
         featured: true,
+        bestseller: false, // Explicitly set bestseller
         stock: 25
       }
     ];
+  };
+  
+  // Add a function to ensure all products have required properties
+  const ensureRequiredProps = (products: any[]): Product[] => {
+    return products.map(product => ({
+      ...product,
+      bestseller: product.bestseller === undefined ? false : product.bestseller,
+      description: product.description || '',
+      // Add any other required properties
+    }));
   };
   
   if (isLoading) {
@@ -240,7 +283,7 @@ export default function NewProducts() {
         
         {/* Mobile view - show error as notification if we're using fallback data */}
         {error && (
-          <div className="mb-4 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm text-center md:hidden">
+          <div className="mb-4 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm text-center md:block lg:hidden">
             {error}
           </div>
         )}
@@ -248,12 +291,14 @@ export default function NewProducts() {
         <div className="relative">
           {/* Scroll button - left */}
           {showLeftButton && (
-            <button 
+            <button
               onClick={scrollLeft}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-amber-600 border border-gray-200 -ml-5 focus:outline-none focus:ring-2 focus:ring-amber-500 hidden md:flex"
+              className={`absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md ${
+                showLeftButton ? 'block' : 'hidden'
+              }`}
               aria-label="Scroll left"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -273,12 +318,14 @@ export default function NewProducts() {
           
           {/* Scroll button - right */}
           {showRightButton && (
-            <button 
+            <button
               onClick={scrollRight}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-amber-600 border border-gray-200 -mr-5 focus:outline-none focus:ring-2 focus:ring-amber-500 hidden md:flex"
+              className={`absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 rounded-full p-2 shadow-md ${
+                showRightButton ? 'block' : 'hidden'
+              }`}
               aria-label="Scroll right"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>

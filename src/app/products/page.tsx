@@ -1,10 +1,33 @@
-'use client'
+"use client"
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Product } from '@/types'
 import React from 'react'
 import ProductCard from '@/components/products/ProductCard'
+
+// Update the Product type to match ProductWithVariants
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+  rating: number;
+  reviews: number;
+  stock: number;
+  bestseller: boolean;
+  featured?: boolean;
+  new?: boolean;
+  description: string;
+  variants?: Array<{
+    id: string;
+    size: string;
+    price: number;
+    stock: number;
+    originalPrice?: number;
+  }>;
+  salePrice?: number;
+}
 
 const categories = ['All', 'Fruits', 'Vegetables', 'Spices & Herbs', 'Superfoods', 'Herbs & Floral', 'Herbs & Tea', 'Spices & Seasonings']
 const sortOptions = [
@@ -50,7 +73,16 @@ function ProductsContent() {
           throw new Error('Failed to fetch products');
         }
         const data = await response.json();
-        setProducts(data.products);
+        
+        // Ensure all required properties are set
+        const productsWithDefaults = data.products.map((product: any) => ({
+          ...product,
+          bestseller: product.bestseller === undefined ? false : product.bestseller,
+          description: product.description || '', // Set default empty string for description
+          // Add any other required properties that might be undefined
+        }));
+        
+        setProducts(productsWithDefaults);
       } catch (err) {
         console.error('Error fetching products:', err);
         setError('Failed to load products. Please try again.');

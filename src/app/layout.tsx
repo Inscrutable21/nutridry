@@ -44,7 +44,7 @@ export default function RootLayout({
         </AuthProvider>
         
         {/* Add a debug element to verify layout is loading */}
-        <div id="layout-debug" className="hidden">Layout loaded</div>
+        <div id="layout-debug" className="sr-only">Layout loaded</div>
       </body>
     </html>
   )

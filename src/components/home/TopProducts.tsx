@@ -6,23 +6,29 @@ import ProductCard from '@/components/products/ProductCard'
 import { Product } from '@/types' // Import the Product type
 import useSWR from 'swr'
 
+// Define a type that matches ProductWithVariants
+interface EnhancedProduct extends Product {
+  bestseller: boolean; // Ensure this is required, not optional
+  description: string; // Ensure this is required, not optional
+}
+
 // Define the fetcher function with proper typing
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error('Failed to fetch')
   return res.json()
 })
 
-export default function TopProductsSlider() {
+export default function TopProducts() {
   const [activeCategory, setActiveCategory] = useState('All')
-  const [touchStart, setTouchStart] = useState(0)
-  const [touchEnd, setTouchEnd] = useState(0)
-  const sliderRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const sliderRef = useRef<HTMLDivElement>(null)
   const [showLeftButton, setShowLeftButton] = useState(false)
   const [showRightButton, setShowRightButton] = useState(true)
-  
+  const [touchStartX, setTouchStartX] = useState(0)
+  const [touchEndX, setTouchEndX] = useState(0)
+
   // Fallback products in case of API failure
-  const getFallbackProducts = (): Product[] => {
+  const getFallbackProducts = (): EnhancedProduct[] => {
     return [
       {
         id: '1',
@@ -70,16 +76,23 @@ export default function TopProductsSlider() {
     dedupingInterval: 120000, // 2 minutes
     fallbackData: { products: getFallbackProducts() } // Your fallback data
   })
-  
-  // Use the data directly
-  const products = data?.products || []
-  const error = swrError ? swrError.message : null
-  
+
+  // Transform the data to ensure all required properties are present
+  const transformedProducts: EnhancedProduct[] = data?.products.map(product => ({
+    ...product,
+    bestseller: product.bestseller === undefined ? true : product.bestseller, // Default to true for top products
+    description: product.description || '', // Default to empty string
+  })) || [];
+
+  // Use the transformed data
+  const products = transformedProducts;
+  const error = swrError ? swrError.message : null;
+
   const categories = ['All', ...new Set(products.map(product => product.category))];
-  
+
   const filteredProducts = activeCategory === 'All' 
     ? products 
-    : products.filter(product => product.category === activeCategory)
+    : products.filter(product => product.category === activeCategory);
   
   // Check if scroll buttons should be shown
   useEffect(() => {
@@ -121,20 +134,20 @@ export default function TopProductsSlider() {
   
   // Touch handlers for mobile swipe
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX)
+    setTouchStartX(e.targetTouches[0].clientX)
   }
   
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX)
+    setTouchEndX(e.targetTouches[0].clientX)
   }
   
   const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 150) {
+    if (touchStartX - touchEndX > 150) {
       // Swipe left
       scrollRight()
     }
     
-    if (touchStart - touchEnd < -150) {
+    if (touchStartX - touchEndX < -150) {
       // Swipe right
       scrollLeft()
     }
