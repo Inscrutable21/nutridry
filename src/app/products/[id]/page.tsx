@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
 import { toast } from 'react-hot-toast'
+import PlaceholderImage from '@/components/ui/PlaceholderImage'
 
 // Add the calculateDiscount function at the top of your component
 const calculateDiscount = (originalPrice: number, currentPrice: number): number => {
@@ -236,14 +237,13 @@ export default function ProductPage() {
                     sizes="(max-width: 768px) 100vw, 50vw"
                     onError={(e) => {
                       console.error('Image failed to load:', product.image);
-                      // Optionally set a fallback image
-                      e.currentTarget.src = '/placeholder.jpg';
+                      // Don't set fallback image here, let the error boundary handle it
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement?.classList.add('image-error');
                     }}
                   />
                 ) : (
-                  <div className="flex items-center justify-center h-full w-full bg-gray-100">
-                    <span className="text-gray-400">No image available</span>
-                  </div>
+                  <PlaceholderImage />
                 )}
               </div>
             </div>

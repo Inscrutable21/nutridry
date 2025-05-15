@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+// Define allowed methods
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+// Handle OPTIONS requests for CORS
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Methods': 'GET, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = (await params).id;
+    const id = params.id;
     
     const product = await prisma.product.findUnique({
       where: { id },
@@ -53,6 +70,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Name and description are required' }, { status: 400 });
     }
     
+    // Ensure image is a non-empty string or set to default value
+    const imageValue = productDetails.image && productDetails.image.trim() !== '' 
+      ? productDetails.image 
+      : '/placeholder.jpg'; // Use a default placeholder image
+    
     // Update the product without using transactions
     try {
       // First update the main product
@@ -62,7 +84,7 @@ export async function PUT(
           name: productDetails.name,
           description: productDetails.description,
           longDescription: productDetails.longDescription || null,
-          image: productDetails.image || null,
+          image: imageValue, // Use the validated image value
           images: productDetails.images || [],
           category: productDetails.category,
           rating: productDetails.rating || 0,
@@ -121,10 +143,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = (await params).id;
+    const id = params.id;
+    
     // Delete the product (variants will be deleted automatically due to cascade)
     await prisma.product.delete({
       where: { id },

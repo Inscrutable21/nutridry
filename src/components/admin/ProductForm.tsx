@@ -212,7 +212,7 @@ export default function ProductForm({
       // Prepare data for submission
       const productData = {
         ...formData,
-        image: mainImage || '',
+        image: mainImage && mainImage.trim() !== '' ? mainImage : '/placeholder.jpg',
         images: additionalImages.filter(img => img.trim() !== ''),
         variants: variants.map(variant => ({
           id: variant.id,
@@ -230,7 +230,7 @@ export default function ProductForm({
         specs: specs
           .filter(item => item.key.trim() !== '' && item.value.trim() !== '')
           .reduce((obj, item) => ({ ...obj, [item.key]: item.value }), {})
-      } as Product; // Cast to Product to ensure all required fields are present
+      } as Product;
       
       if (initialData.id) {
         productData.id = initialData.id;
@@ -247,21 +247,31 @@ export default function ProductForm({
         
         // Add timeout to fetch request
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
         
         try {
-          const response = await fetch(url, {
+          // Add a timestamp to prevent caching issues
+          const timestamp = new Date().getTime();
+          const urlWithTimestamp = `${url}?t=${timestamp}`;
+          
+          const response = await fetch(urlWithTimestamp, {
             method,
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(productData),
-            signal: controller.signal
+            signal: controller.signal,
+            // Add cache control
+            cache: 'no-store',
           });
           
           clearTimeout(timeoutId);
           
           // Handle different response statuses
+          if (response.status === 405) {
+            throw new Error('Method not allowed. This might be a server configuration issue. Please try again later.');
+          }
+          
           if (response.status === 413) {
             throw new Error('Request too large. Try uploading smaller images or reducing the amount of data.');
           }
@@ -298,6 +308,12 @@ export default function ProductForm({
     } catch (error) {
       console.error('Error saving product:', error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      
+      // Show alert in production for critical errors
+      if (process.env.NODE_ENV === 'production' && error instanceof Error && 
+          (error.message.includes('405') || error.message.includes('Method not allowed'))) {
+        alert('There was a problem saving the product. Please try again later or contact support.');
+      }
     } finally {
       setIsLoading(false);
     }
