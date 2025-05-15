@@ -102,31 +102,65 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
     
+    // Extract variants from the data
+    const { variants, ...productDetails } = data;
+    
     // Validate the data
-    if (!data.name || !data.price) {
+    if (!data.name || !data.description) {
       return Response.json(
-        { error: 'Name and price are required' },
+        { error: 'Name and description are required' },
         { status: 400 }
       );
     }
     
+    // Ensure image is a non-empty string or set to default value
+    const imageValue = productDetails.image && productDetails.image.trim() !== '' 
+      ? productDetails.image 
+      : '/placeholder.jpg'; // Use a default placeholder image
+    
     // Create product without using a transaction
     const product = await prisma.product.create({
       data: {
-        name: data.name,
-        description: data.description || '',
-        price: parseFloat(data.price),
-        image: data.image || '',
-        category: data.category || 'Uncategorized',
-        rating: data.rating ? parseFloat(data.rating) : 0,
-        reviews: data.reviews || 0,
-        bestseller: data.bestseller || false,
-        featured: data.featured || false,
-        stock: data.stock || 0,
+        name: productDetails.name,
+        description: productDetails.description,
+        longDescription: productDetails.longDescription || null,
+        image: imageValue, // Use the validated image value
+        images: productDetails.images || [],
+        category: productDetails.category,
+        rating: productDetails.rating || 0,
+        reviews: productDetails.reviews || 0,
+        bestseller: productDetails.bestseller || false,
+        featured: productDetails.featured || false,
+        benefits: productDetails.benefits || [],
+        features: productDetails.features || [],
+        usageSuggestions: productDetails.usageSuggestions || [],
+        nutritionalInfo: productDetails.nutritionalInfo || {},
+        specs: productDetails.specs || {},
       },
     });
     
-    return Response.json({ product }, { status: 201 });
+    // Create variants if provided
+    if (variants && variants.length > 0) {
+      for (const variant of variants) {
+        await prisma.sizeVariant.create({
+          data: {
+            size: variant.size || '',
+            price: Number(variant.price) || 0,
+            originalPrice: variant.originalPrice ? Number(variant.originalPrice) : null,
+            stock: Number(variant.stock) || 0,
+            productId: product.id,
+          },
+        });
+      }
+    }
+    
+    // Return the created product with variants
+    const productWithVariants = await prisma.product.findUnique({
+      where: { id: product.id },
+      include: { variants: true },
+    });
+    
+    return Response.json({ product: productWithVariants }, { status: 201 });
   } catch (error) {
     console.error('Error saving product:', error);
     return Response.json(

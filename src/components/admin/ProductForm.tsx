@@ -197,7 +197,7 @@ export default function ProductForm({
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(''); // Set to empty string instead of null
+    setError(''); // Clear previous errors
     
     try {
       // Validate form
@@ -245,20 +245,55 @@ export default function ProductForm({
         
         const method = initialData.id ? 'PUT' : 'POST';
         
-        const response = await fetch(url, {
-          method,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(productData),
-        });
+        // Add timeout to fetch request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
         
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to save product');
+        try {
+          const response = await fetch(url, {
+            method,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(productData),
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          // Handle different response statuses
+          if (response.status === 413) {
+            throw new Error('Request too large. Try uploading smaller images or reducing the amount of data.');
+          }
+          
+          let errorData;
+          try {
+            // Try to parse the response as JSON
+            errorData = await response.json();
+          } catch (jsonError) {
+            // If JSON parsing fails, use status text
+            if (!response.ok) {
+              throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+          }
+          
+          if (!response.ok) {
+            // If we have JSON error data, use it
+            if (errorData && errorData.error) {
+              throw new Error(errorData.error);
+            } else {
+              throw new Error(`Failed to save product (Status: ${response.status})`);
+            }
+          }
+          
+          // Success - redirect to products page
+          router.push('/admin/products');
+        } catch (fetchError) {
+          if (fetchError.name === 'AbortError') {
+            throw new Error('Request timed out. Please try again.');
+          }
+          throw fetchError;
         }
-        
-        router.push('/admin/products');
       }
     } catch (error) {
       console.error('Error saving product:', error);

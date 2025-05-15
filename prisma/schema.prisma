@@ -14,37 +14,38 @@ model Product {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   name             String
   description      String
-  longDescription  String?       // Detailed product description
-  variants         SizeVariant[]
-  image            String
-  images           String[]      // Additional product images
+  longDescription  String?
+  image            String?       // Make image nullable with ?
+  images           String[]
   category         String
   rating           Float         @default(0)
   reviews          Int           @default(0)
   bestseller       Boolean       @default(false)
   featured         Boolean       @default(false)
-  benefits         String[]      // Product benefits
-  features         String[]      // Product features
-  usageSuggestions String[]      // Usage suggestions
-  nutritionalInfo  Json?         // Nutritional information as key-value pairs
-  specs            Json?         // Specifications as key-value pairs
+  stock            Int           @default(0)
+  benefits         String[]
+  features         String[]
+  usageSuggestions String[]
+  nutritionalInfo  Json?
+  specs            Json?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
+  variants         SizeVariant[]
 }
 
 model SizeVariant {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  productId     String   @db.ObjectId
   size          String
   price         Float
   originalPrice Float?
   stock         Int      @default(0)
   product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId     String   @db.ObjectId
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-}
 
-// Removed User model as per your requirements
+  @@index([productId])
+}
 
 model Admin {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -53,5 +54,8 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
+
 
 
