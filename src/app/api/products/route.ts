@@ -117,6 +117,14 @@ export async function POST(request: Request) {
       ? productDetails.image 
       : '/placeholder.jpg'; // Use a default placeholder image
     
+    // Check if the image data is too large
+    if (typeof imageValue === 'string' && imageValue.length > 5 * 1024 * 1024) {
+      return Response.json(
+        { error: 'Image data is too large. Please use a smaller image (under 5MB).' },
+        { status: 413 }
+      );
+    }
+    
     // Create product without using a transaction
     const product = await prisma.product.create({
       data: {
@@ -138,7 +146,7 @@ export async function POST(request: Request) {
       },
     });
     
-    // Create variants if provided
+    // Create variants if any
     if (variants && variants.length > 0) {
       for (const variant of variants) {
         await prisma.sizeVariant.create({
@@ -153,7 +161,7 @@ export async function POST(request: Request) {
       }
     }
     
-    // Return the created product with variants
+    // Get the product with variants
     const productWithVariants = await prisma.product.findUnique({
       where: { id: product.id },
       include: { variants: true },

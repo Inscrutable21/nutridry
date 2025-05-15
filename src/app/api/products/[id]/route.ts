@@ -75,6 +75,14 @@ export async function PUT(
       ? productDetails.image 
       : '/placeholder.jpg'; // Use a default placeholder image
     
+    // Check if the image data is too large
+    if (typeof imageValue === 'string' && imageValue.length > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'Image data is too large. Please use a smaller image (under 5MB).' },
+        { status: 413 }
+      );
+    }
+    
     // Update the product without using transactions
     try {
       // First update the main product

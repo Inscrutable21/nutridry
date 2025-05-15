@@ -209,6 +209,12 @@ export default function ProductForm({
         throw new Error('Please add at least one variant with pricing and stock information');
       }
       
+      // Check if images are data URLs (from our ImageUploader)
+      const isDataUrl = (url: string) => url.startsWith('data:image/');
+      
+      // For production, we'll use the data URLs directly
+      // This avoids issues with image uploads in production
+      
       // Prepare data for submission
       const productData = {
         ...formData,
@@ -245,9 +251,9 @@ export default function ProductForm({
         
         const method = initialData.id ? 'PUT' : 'POST';
         
-        // Add timeout to fetch request
+        // Set up timeout for the fetch request
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for larger payloads
         
         try {
           // Add a timestamp to prevent caching issues
@@ -276,10 +282,10 @@ export default function ProductForm({
             throw new Error('Request too large. Try uploading smaller images or reducing the amount of data.');
           }
           
-          let errorData;
+          let responseData;
           try {
             // Try to parse the response as JSON
-            errorData = await response.json();
+            responseData = await response.json();
           } catch (parseError) {
             // If JSON parsing fails, use status text
             console.error('Failed to parse JSON response:', parseError);
@@ -290,8 +296,8 @@ export default function ProductForm({
           
           if (!response.ok) {
             // If we have JSON error data, use it
-            if (errorData && errorData.error) {
-              throw new Error(errorData.error);
+            if (responseData && responseData.error) {
+              throw new Error(responseData.error);
             } else {
               throw new Error(`Failed to save product (Status: ${response.status})`);
             }
@@ -302,7 +308,7 @@ export default function ProductForm({
         } catch (fetchError: unknown) {
           // Type guard to check if fetchError is an Error object with a name property
           if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-            throw new Error('Request timed out. Please try again.');
+            throw new Error('Request timed out. Please try again with smaller images.');
           }
           throw fetchError;
         }
@@ -313,6 +319,9 @@ export default function ProductForm({
       
       // Show alert in production for critical errors
       if (process.env.NODE_ENV === 'production' && error instanceof Error && 
+          (error.message.includes('413') || error.message.includes('too large'))) {
+        alert('The images you uploaded may be too large. Please try using smaller images (under 5MB each).');
+      } else if (process.env.NODE_ENV === 'production' && error instanceof Error && 
           (error.message.includes('405') || error.message.includes('Method not allowed'))) {
         alert('There was a problem saving the product. Please try again later or contact support.');
       }
