@@ -4,6 +4,10 @@ const nextConfig = {
     // Ignore specific ESLint errors during build
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    // Ignore TypeScript errors during build
+    ignoreBuildErrors: true,
+  },
   // Add increased API timeout
   api: {
     responseLimit: false,

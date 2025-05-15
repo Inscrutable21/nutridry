@@ -100,56 +100,37 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const productData = await request.json();
-    console.log('Received product data:', productData);
+    const data = await request.json();
     
-    // Extract variants data if any
-    const { variants, ...productDetails } = productData;
-    console.log('Variants:', variants);
-    console.log('Product details:', productDetails);
-    
-    // Create product first, then add variants
-    try {
-      // Create the product
-      const newProduct = await prisma.product.create({
-        data: productDetails,
-      });
-      
-      // Create variants if provided
-      if (variants && variants.length > 0) {
-        await prisma.sizeVariant.createMany({
-          data: variants.map((variant: { 
-            size: string; 
-            price: number; 
-            originalPrice?: number;
-            stock: number; 
-          }) => ({
-            size: variant.size || '',
-            price: Number(variant.price) || 0,
-            originalPrice: variant.originalPrice ? Number(variant.originalPrice) : null,
-            stock: Number(variant.stock) || 0,
-            productId: newProduct.id,
-          })),
-        });
-      }
-      
-      // Return the complete product with variants
-      const productWithVariants = await prisma.product.findUnique({
-        where: { id: newProduct.id },
-        include: { variants: true },
-      });
-      
-      return NextResponse.json(productWithVariants);
-    } catch (dbError) {
-      console.error('Database operation failed:', dbError);
-      throw dbError;
+    // Validate the data
+    if (!data.name || !data.price) {
+      return Response.json(
+        { error: 'Name and price are required' },
+        { status: 400 }
+      );
     }
+    
+    // Create product without using a transaction
+    const product = await prisma.product.create({
+      data: {
+        name: data.name,
+        description: data.description || '',
+        price: parseFloat(data.price),
+        image: data.image || '',
+        category: data.category || 'Uncategorized',
+        rating: data.rating ? parseFloat(data.rating) : 0,
+        reviews: data.reviews || 0,
+        bestseller: data.bestseller || false,
+        featured: data.featured || false,
+        stock: data.stock || 0,
+      },
+    });
+    
+    return Response.json({ product }, { status: 201 });
   } catch (error) {
-    console.error('Error creating product:', error);
-    // Safely access error message
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    return NextResponse.json(
-      { error: `Failed to create product: ${errorMessage}` },
+    console.error('Error saving product:', error);
+    return Response.json(
+      { error: `Error saving product: ${error instanceof Error ? error.message : String(error)}` },
       { status: 500 }
     );
   }
