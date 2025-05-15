@@ -1,0 +1,27 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "@typescript-eslint/no-explicit-any": ["error", {
+      "ignoreRestArgs": true,
+      "fixToUnknown": false
+    }],
+    "no-var": "error",
+    "react/no-unescaped-entities": "warn",
+    "@typescript-eslint/no-unused-vars": ["error", { 
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_|getCurrentPriceInfo",
+      "ignoreRestSiblings": true
+    }]
+  },
+  "overrides": [
+    {
+      "files": ["**/api/**/*.ts", "**/lib/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ]
+}
+
+
+

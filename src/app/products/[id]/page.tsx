@@ -167,6 +167,7 @@ export default function ProductPage() {
   }
   
   // Get current price and original price based on selected variant
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getCurrentPriceInfo = () => {
     if (!product) return { 
       currentPrice: 0, 
@@ -206,7 +207,7 @@ export default function ProductPage() {
       size: null,
       discountAmount: 0
     };
-  }; 
+  };
   
   return (
     <div className="pt-24 pb-16">

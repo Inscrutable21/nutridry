@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-'use client'
-
+import React from 'react';
 import { PageHeader } from '@/components/layout'
 
 export default function ShippingPage() {

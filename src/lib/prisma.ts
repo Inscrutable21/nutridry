@@ -1,6 +1,24 @@
 // src/lib/prisma.ts
 import { PrismaClient } from '@prisma/client';
 
+// Define a type for cache data
+type CacheData = unknown;
+
+// Define the product cache type
+interface ProductCache {
+  bestsellers: { data: CacheData | null, timestamp: number };
+  featured: { data: CacheData | null, timestamp: number };
+  categories: Record<string, { data: CacheData | null, timestamp: number }>;
+}
+
+// Extend the global type to include our custom properties
+declare global {
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
+  // eslint-disable-next-line no-var
+  var productCache: ProductCache | undefined;
+}
+
 // PrismaClient is attached to the `global` object in development to prevent
 // exhausting your database connection limit.
 const globalForPrisma = global as unknown as { prisma: PrismaClient };

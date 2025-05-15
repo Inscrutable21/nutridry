@@ -75,7 +75,30 @@ function ProductsContent() {
         const data = await response.json();
         
         // Ensure all required properties are set
-        const productsWithDefaults = data.products.map((product: any) => ({
+        interface ProductData {
+          id: string;
+          name: string;
+          price: number;
+          image?: string;
+          category: string;
+          rating?: number;
+          reviews?: number;
+          stock?: number;
+          bestseller?: boolean;
+          featured?: boolean;
+          description?: string;
+          variants?: Array<{
+            id: string;
+            size: string;
+            price: number;
+            stock?: number;
+            originalPrice?: number;
+          }>;
+          // Add other specific properties you need
+          [key: string]: unknown; // Use unknown instead of any for safety
+        }
+
+        const productsWithDefaults = data.products.map((product: ProductData) => ({
           ...product,
           bestseller: product.bestseller === undefined ? false : product.bestseller,
           description: product.description || '', // Set default empty string for description

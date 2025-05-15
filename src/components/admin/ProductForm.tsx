@@ -49,9 +49,9 @@ export default function ProductForm({
 }: ProductFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(''); // Change to string | null
   const [mainImage, setMainImage] = useState<string>(initialData?.image || '');
   const [additionalImages, setAdditionalImages] = useState<string[]>(initialData?.images || []);
+  const [formError, setFormError] = useState<string>(''); // Add the missing formError state
   
   // Initialize form data without price and salePrice
   const [formData, setFormData] = useState<Partial<Product>>({    
@@ -197,7 +197,7 @@ export default function ProductForm({
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(''); // Clear previous errors
+    setFormError(''); // Clear previous errors
     
     try {
       // Validate form
@@ -280,8 +280,9 @@ export default function ProductForm({
           try {
             // Try to parse the response as JSON
             errorData = await response.json();
-          } catch (jsonError) {
+          } catch (parseError) {
             // If JSON parsing fails, use status text
+            console.error('Failed to parse JSON response:', parseError);
             if (!response.ok) {
               throw new Error(`Server error: ${response.status} ${response.statusText}`);
             }
@@ -298,8 +299,9 @@ export default function ProductForm({
           
           // Success - redirect to products page
           router.push('/admin/products');
-        } catch (fetchError) {
-          if (fetchError.name === 'AbortError') {
+        } catch (fetchError: unknown) {
+          // Type guard to check if fetchError is an Error object with a name property
+          if (fetchError instanceof Error && fetchError.name === 'AbortError') {
             throw new Error('Request timed out. Please try again.');
           }
           throw fetchError;
@@ -307,7 +309,7 @@ export default function ProductForm({
       }
     } catch (error) {
       console.error('Error saving product:', error);
-      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      setFormError(error instanceof Error ? error.message : 'An unknown error occurred');
       
       // Show alert in production for critical errors
       if (process.env.NODE_ENV === 'production' && error instanceof Error && 
@@ -321,6 +323,13 @@ export default function ProductForm({
   
   return (
     <div className="space-y-6">
+      {/* Display form error if present */}
+      {formError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+          <p>{formError}</p>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Basic Information */}
         <div className="space-y-4">

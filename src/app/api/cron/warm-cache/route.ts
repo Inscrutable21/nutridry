@@ -4,6 +4,25 @@ import prisma from '@/lib/prisma';
 
 export const maxDuration = 60; // Changed from 300 to 60 seconds (maximum allowed on hobby plan)
 
+// Define the type for the dashboard stats
+interface DashboardStats {
+  productCount: number;
+  featuredCount: number;
+  bestsellerCount: number;
+  lastUpdated: string;
+}
+
+// Extend the global namespace to include our custom properties
+declare global {
+  // eslint-disable-next-line no-var
+  var dashboardStats: DashboardStats | undefined;
+}
+
+// Create a type-safe reference to the global object
+const globalWithDashboardStats = global as typeof global & {
+  dashboardStats?: DashboardStats;
+};
+
 export async function GET() {
   try {
     // Get product counts and cache them
@@ -14,8 +33,8 @@ export async function GET() {
     ]);
     
     // Store in a global cache with proper typing
-    if (!global.dashboardStats) {
-      global.dashboardStats = {
+    if (!globalWithDashboardStats.dashboardStats) {
+      globalWithDashboardStats.dashboardStats = {
         productCount: 0,
         featuredCount: 0,
         bestsellerCount: 0,
@@ -24,15 +43,15 @@ export async function GET() {
     }
     
     // Update the stats
-    global.dashboardStats.productCount = productCount;
-    global.dashboardStats.featuredCount = featuredCount;
-    global.dashboardStats.bestsellerCount = bestsellerCount;
-    global.dashboardStats.lastUpdated = new Date().toISOString();
+    globalWithDashboardStats.dashboardStats.productCount = productCount;
+    globalWithDashboardStats.dashboardStats.featuredCount = featuredCount;
+    globalWithDashboardStats.dashboardStats.bestsellerCount = bestsellerCount;
+    globalWithDashboardStats.dashboardStats.lastUpdated = new Date().toISOString();
     
     return NextResponse.json({
       success: true,
       message: 'Cache warmed up successfully',
-      stats: global.dashboardStats
+      stats: globalWithDashboardStats.dashboardStats
     });
   } catch (error) {
     console.error('Cache warming error:', error);
@@ -42,5 +61,3 @@ export async function GET() {
     );
   }
 }
-
-

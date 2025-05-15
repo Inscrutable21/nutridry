@@ -21,7 +21,7 @@ export default function Error({
         <div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Something went wrong!</h2>
           <p className="mt-2 text-sm text-gray-600">
-            We're sorry, but we encountered an unexpected error.
+            We&apos;re sorry, but we encountered an unexpected error.
           </p>
           {process.env.NODE_ENV === 'development' && (
             <div className="mt-4 p-4 bg-red-50 rounded-md text-left">

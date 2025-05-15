@@ -2,13 +2,67 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
 
+// Define the Product interface based on your schema
+interface Product {
+  id?: string;
+  name: string;
+  description: string;
+  longDescription?: string;
+  image?: string | null;
+  images: string[];
+  category: string;
+  rating?: number;
+  reviews?: number;
+  bestseller: boolean;
+  featured: boolean;
+  stock: number;
+  benefits: string[];
+  features: string[];
+  usageSuggestions: string[];
+  nutritionalInfo?: Record<string, unknown> | null;
+  specs?: Record<string, unknown> | null;
+  variants: ProductVariant[];
+}
+
+// Interface for product variants matching your schema
+interface ProductVariant {
+  size: string;
+  price: number;
+  originalPrice?: number | null;
+  stock: number;
+}
+
+// Interface for Excel row data
+interface ExcelRow {
+  name: string;
+  description: string;
+  longDescription?: string;
+  category: string;
+  image?: string;
+  additionalImages?: string;
+  bestseller?: boolean | string;
+  featured?: boolean | string;
+  benefits?: string;
+  features?: string;
+  usageSuggestions?: string;
+  variants?: string;
+  nutritionalInfo?: string;
+  specs?: string;
+  [key: string]: unknown; // For any other properties
+}
+
+interface UploadStatus {
+  status: 'idle' | 'success' | 'error';
+  message: string;
+}
+
 export default function ExcelProductUploader() {
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<{
-    status: 'idle' | 'success' | 'error';
-    message: string;
-  }>({ status: 'idle', message: '' });
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>({
+    status: 'idle',
+    message: '',
+  });
   const [fileSelected, setFileSelected] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,8 +85,8 @@ export default function ExcelProductUploader() {
     }
   };
 
-  const processExcelData = async (file: File) => {
-    return new Promise<any[]>((resolve, reject) => {
+  const processExcelData = async (file: File): Promise<ExcelRow[]> => {
+    return new Promise<ExcelRow[]>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
@@ -41,33 +95,56 @@ export default function ExcelProductUploader() {
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
-          resolve(jsonData);
-        } catch (error) {
-          reject(error);
+          resolve(jsonData as ExcelRow[]);
+        } catch (err) {
+          reject(err);
         }
       };
-      reader.onerror = (error) => reject(error);
+      reader.onerror = (err) => reject(err);
       reader.readAsBinaryString(file);
     });
   };
 
-  const validateProductData = (products: any[]) => {
-    const requiredFields = ['name', 'description', 'price', 'category', 'stock'];
+  const validateProductData = (excelData: ExcelRow[]): string[] => {
+    const requiredFields = ['name', 'description', 'category'];
     const errors: string[] = [];
 
-    products.forEach((product, index) => {
+    excelData.forEach((row, index) => {
       requiredFields.forEach((field) => {
-        if (!product[field] && product[field] !== 0) {
+        if (!row[field]) {
           errors.push(`Row ${index + 2}: Missing required field '${field}'`);
         }
       });
 
-      // Validate numeric fields
-      if (product.price && isNaN(Number(product.price))) {
-        errors.push(`Row ${index + 2}: Price must be a number`);
-      }
-      if (product.stock && isNaN(Number(product.stock))) {
-        errors.push(`Row ${index + 2}: Stock must be a number`);
+      // Check for variants
+      if (!row.variants) {
+        errors.push(`Row ${index + 2}: Missing required field 'variants'`);
+      } else {
+        try {
+          const parsedVariants = JSON.parse(row.variants as string);
+          if (!Array.isArray(parsedVariants) || parsedVariants.length === 0) {
+            errors.push(`Row ${index + 2}: 'variants' must be a non-empty array`);
+          } else {
+            // Check each variant has required fields
+            parsedVariants.forEach((variant, variantIndex) => {
+              if (!variant.size) {
+                errors.push(`Row ${index + 2}, Variant ${variantIndex + 1}: Missing 'size'`);
+              }
+              if (variant.price === undefined || variant.price === null) {
+                errors.push(`Row ${index + 2}, Variant ${variantIndex + 1}: Missing 'price'`);
+              }
+              if (isNaN(Number(variant.price))) {
+                errors.push(`Row ${index + 2}, Variant ${variantIndex + 1}: 'price' must be a number`);
+              }
+              if (variant.stock !== undefined && isNaN(Number(variant.stock))) {
+                errors.push(`Row ${index + 2}, Variant ${variantIndex + 1}: 'stock' must be a number`);
+              }
+            });
+          }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+          errors.push(`Row ${index + 2}: 'variants' must be a valid JSON array`);
+        }
       }
     });
 
@@ -96,42 +173,48 @@ export default function ExcelProductUploader() {
       }
 
       // Transform data to match product schema
-      const productsToUpload = excelData.map((row: any) => {
+      const productsToUpload: Partial<Product>[] = excelData.map((row: ExcelRow) => {
         // Helper function to safely parse JSON
-        const safeJsonParse = (jsonString: any, defaultValue: any) => {
-          if (!jsonString) return defaultValue;
+        const safeJsonParse = <T,>(jsonString: string | undefined, fallback: T): T => {
+          if (!jsonString) return fallback;
           try {
-            // Handle potential string formatting issues
-            const cleaned = typeof jsonString === 'string' 
-              ? jsonString.trim().replace(/^['"]|['"]$/g, '') // Remove quotes if present
-              : jsonString;
-            return typeof cleaned === 'object' ? cleaned : JSON.parse(cleaned);
-          } catch (error) {
-            console.warn('Failed to parse JSON:', error);
-            return defaultValue;
+            return JSON.parse(jsonString);
+          } catch (err) {
+            console.error('Error parsing JSON:', err);
+            return fallback;
           }
         };
 
+        // Parse variants correctly
+        const parsedVariants: ProductVariant[] = safeJsonParse<ProductVariant[]>(row.variants as string, [])
+          .map(variant => ({
+            size: variant.size,
+            price: Number(variant.price),
+            originalPrice: variant.originalPrice !== undefined && variant.originalPrice !== null 
+              ? Number(variant.originalPrice) 
+              : null,
+            stock: variant.stock !== undefined ? Number(variant.stock) : 0
+          }));
+
+        // Calculate total stock from variants
+        const totalStock = parsedVariants.reduce((sum, variant) => sum + variant.stock, 0);
+        
         return {
           name: row.name,
           description: row.description,
           longDescription: row.longDescription || '',
-          price: Number(row.price),
-          // Fix salePrice handling to ensure it's a number or null, never a string
-          salePrice: row.salePrice ? Number(row.salePrice) || null : null,
-          image: row.image || '',
+          image: row.image || null,
           images: row.additionalImages ? row.additionalImages.split(',').map((img: string) => img.trim()) : [],
           category: row.category,
-          stock: Number(row.stock),
+          stock: totalStock, // Set stock as sum of variant stocks
           bestseller: row.bestseller === 'true' || row.bestseller === true,
           featured: row.featured === 'true' || row.featured === true,
           benefits: row.benefits ? row.benefits.split(',').map((b: string) => b.trim()) : [],
           features: row.features ? row.features.split(',').map((f: string) => f.trim()) : [],
           usageSuggestions: row.usageSuggestions ? row.usageSuggestions.split(',').map((u: string) => u.trim()) : [],
-          // Use safe parsing for complex JSON fields
-          variants: safeJsonParse(row.variants, []),
-          nutritionalInfo: safeJsonParse(row.nutritionalInfo, {}),
-          specs: safeJsonParse(row.specs, {}),
+          nutritionalInfo: safeJsonParse(row.nutritionalInfo as string, null),
+          specs: safeJsonParse(row.specs as string, null),
+          variants: parsedVariants
         };
       });
 
@@ -155,11 +238,11 @@ export default function ExcelProductUploader() {
 
       // Refresh the products list
       router.refresh();
-    } catch (error) {
-      console.error('Upload error:', error);
+    } catch (err) {
+      console.error('Upload error:', err);
       setUploadStatus({
         status: 'error',
-        message: error instanceof Error ? error.message : 'Failed to upload products',
+        message: err instanceof Error ? err.message : 'Failed to upload products',
       });
     } finally {
       setIsUploading(false);

@@ -20,10 +20,10 @@ export async function OPTIONS() {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const id = (await params).id;
     
     const product = await prisma.product.findUnique({
       where: { id },
@@ -56,10 +56,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const id = (await params).id;
     const data = await request.json();
     
     // Extract variants from the data
@@ -78,7 +78,7 @@ export async function PUT(
     // Update the product without using transactions
     try {
       // First update the main product
-      const updatedProduct = await prisma.product.update({
+      await prisma.product.update({
         where: { id },
         data: {
           name: productDetails.name,
@@ -143,10 +143,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const id = (await params).id;
     
     // Delete the product (variants will be deleted automatically due to cascade)
     await prisma.product.delete({

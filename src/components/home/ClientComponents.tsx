@@ -1,7 +1,7 @@
 'use client'
 
 // Import any client-side hooks or libraries you need here
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 // Create client components for any interactive elements
 export function NewsletterForm() {

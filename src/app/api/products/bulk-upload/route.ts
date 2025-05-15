@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+// import { Product } from '@/types';
 
 export async function POST(request: Request) {
   try {
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
         // Create variants if any
         if (variants && variants.length > 0) {
           await tx.sizeVariant.createMany({
-            data: variants.map((variant: any) => ({
+            data: variants.map((variant: { size?: string; price?: number; originalPrice?: number | null; stock?: number }) => ({
               ...variant,
               productId: product.id,
             })),
