@@ -209,9 +209,6 @@ export default function ProductForm({
         throw new Error('Please add at least one variant with pricing and stock information');
       }
       
-      // Check if images are data URLs (from our ImageUploader)
-      const isDataUrl = (url: string) => url.startsWith('data:image/');
-      
       // For production, we'll use the data URLs directly
       // This avoids issues with image uploads in production
       

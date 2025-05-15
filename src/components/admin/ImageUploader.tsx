@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import PlaceholderImage from '../ui/PlaceholderImage';
+// import PlaceholderImage from '../ui/PlaceholderImage';
 
 type ImageUploaderProps = {
   initialImage?: string;
