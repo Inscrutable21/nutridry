@@ -61,11 +61,36 @@ export default function ProductList({ products, showActions = true, onRefresh, o
   // Update the toggleBestseller and toggleFeatured functions similarly
   const toggleBestseller = async (id: string, currentValue: boolean) => {
     try {
-      const response = await fetch(`/api/products/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bestseller: !currentValue }),
-      });
+      // Try PATCH first, then fall back to PUT if needed
+      let response;
+      try {
+        response = await fetch(`/api/products/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bestseller: !currentValue }),
+        });
+        
+        if (response.status === 405) {
+          // If PATCH is not allowed, try PUT
+          throw new Error('Method not allowed');
+        }
+      } catch (patchError) {
+        // Fall back to PUT if PATCH fails
+        console.log('PATCH failed, trying PUT instead:', 
+          patchError instanceof Error ? patchError.message : String(patchError));
+        response = await fetch(`/api/products/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            id,
+            bestseller: !currentValue,
+            // We need to include these required fields for PUT
+            name: 'placeholder', 
+            description: 'placeholder',
+            category: 'placeholder'
+          }),
+        });
+      }
 
       if (!response.ok) {
         throw new Error('Failed to update product');
@@ -79,20 +104,45 @@ export default function ProductList({ products, showActions = true, onRefresh, o
         router.refresh();
       }
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error('Error updating product:', error instanceof Error ? error.message : String(error));
       alert('Failed to update product. Please try again.');
     }
   };
 
   const toggleFeatured = async (id: string, currentValue: boolean) => {
-    // Similar changes as toggleBestseller
     try {
       console.log(`Toggling featured for product ${id} from ${currentValue} to ${!currentValue}`);
-      const response = await fetch(`/api/products/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ featured: !currentValue }),
-      });
+      
+      // Try PATCH first, then fall back to PUT if needed
+      let response;
+      try {
+        response = await fetch(`/api/products/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ featured: !currentValue }),
+        });
+        
+        if (response.status === 405) {
+          // If PATCH is not allowed, try PUT
+          throw new Error('Method not allowed');
+        }
+      } catch (patchError) {
+        // Fall back to PUT if PATCH fails
+        console.log('PATCH failed, trying PUT instead:', 
+          patchError instanceof Error ? patchError.message : String(patchError));
+        response = await fetch(`/api/products/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            id,
+            featured: !currentValue,
+            // We need to include these required fields for PUT
+            name: 'placeholder', 
+            description: 'placeholder',
+            category: 'placeholder'
+          }),
+        });
+      }
   
       if (!response.ok) {
         throw new Error('Failed to update product');
@@ -101,13 +151,15 @@ export default function ProductList({ products, showActions = true, onRefresh, o
       const updatedProduct = await response.json();
       console.log('Updated product:', updatedProduct);
   
-      if (onRefresh) {
+      if (onProductsChange) {
+        await onProductsChange();
+      } else if (onRefresh) {
         onRefresh();
       } else {
         router.refresh();
       }
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error('Error updating product:', error instanceof Error ? error.message : String(error));
       alert('Failed to update product. Please try again.');
     }
   };

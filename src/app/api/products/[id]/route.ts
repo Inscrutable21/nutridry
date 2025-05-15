@@ -167,3 +167,113 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
   }
 }
+
+// Add a PATCH method to handle updates in a more compatible way
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const id = (await params).id;
+    const data = await request.json();
+    
+    // Check if we're just updating a single field (like bestseller or featured)
+    if (Object.keys(data).length === 1 && (data.bestseller !== undefined || data.featured !== undefined)) {
+      // Simple update for a single field
+      const updateData = data.bestseller !== undefined 
+        ? { bestseller: data.bestseller } 
+        : { featured: data.featured };
+      
+      // Update the product and return it directly without storing in a variable
+      await prisma.product.update({
+        where: { id },
+        data: updateData,
+      });
+      
+      // Return the updated product with variants
+      const productWithVariants = await prisma.product.findUnique({
+        where: { id },
+        include: { variants: true },
+      });
+      
+      return NextResponse.json(productWithVariants);
+    }
+    
+    // For full updates, extract variants from the data
+    const { variants, ...productDetails } = data;
+    
+    // Validate the data for full updates
+    if (Object.keys(data).length > 1 && (!data.name || !data.description)) {
+      return NextResponse.json({ error: 'Name and description are required' }, { status: 400 });
+    }
+    
+    // Ensure image is a non-empty string or set to default value
+    const imageValue = productDetails.image && productDetails.image.trim() !== '' 
+      ? productDetails.image 
+      : '/placeholder.jpg'; // Use a default placeholder image
+    
+    // Update the product without using transactions
+    try {
+      // First update the main product without storing the result
+      await prisma.product.update({
+        where: { id },
+        data: {
+          ...(productDetails.name && { name: productDetails.name }),
+          ...(productDetails.description && { description: productDetails.description }),
+          ...(productDetails.longDescription !== undefined && { longDescription: productDetails.longDescription || null }),
+          ...(productDetails.image !== undefined && { image: imageValue }),
+          ...(productDetails.images !== undefined && { images: productDetails.images || [] }),
+          ...(productDetails.category && { category: productDetails.category }),
+          ...(productDetails.rating !== undefined && { rating: productDetails.rating || 0 }),
+          ...(productDetails.reviews !== undefined && { reviews: productDetails.reviews || 0 }),
+          ...(productDetails.bestseller !== undefined && { bestseller: productDetails.bestseller }),
+          ...(productDetails.featured !== undefined && { featured: productDetails.featured }),
+          ...(productDetails.benefits !== undefined && { benefits: productDetails.benefits || [] }),
+          ...(productDetails.features !== undefined && { features: productDetails.features || [] }),
+          ...(productDetails.usageSuggestions !== undefined && { usageSuggestions: productDetails.usageSuggestions || [] }),
+          ...(productDetails.nutritionalInfo !== undefined && { nutritionalInfo: productDetails.nutritionalInfo || {} }),
+          ...(productDetails.specs !== undefined && { specs: productDetails.specs || {} }),
+        },
+      });
+      
+      // Then handle variants separately if they were provided
+      if (variants && variants.length > 0) {
+        // Delete existing variants
+        await prisma.sizeVariant.deleteMany({
+          where: { productId: id },
+        });
+        
+        // Create new variants one by one
+        for (const variant of variants) {
+          await prisma.sizeVariant.create({
+            data: {
+              size: variant.size || '',
+              price: Number(variant.price) || 0,
+              originalPrice: variant.originalPrice ? Number(variant.originalPrice) : null,
+              stock: Number(variant.stock) || 0,
+              productId: id,
+            },
+          });
+        }
+      }
+      
+      // Return the updated product with variants
+      const productWithVariants = await prisma.product.findUnique({
+        where: { id },
+        include: { variants: true },
+      });
+      
+      return NextResponse.json(productWithVariants);
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      return NextResponse.json({ 
+        error: `Database error: ${dbError instanceof Error ? dbError.message : String(dbError)}` 
+      }, { status: 500 });
+    }
+  } catch (error) {
+    console.error('Error updating product:', error);
+    return NextResponse.json({ 
+      error: `Failed to update product: ${error instanceof Error ? error.message : String(error)}` 
+    }, { status: 500 });
+  }
+}
