@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import prisma from '@/lib/prisma';
 
 // Define allowed methods
@@ -73,41 +74,23 @@ export async function PUT(
     // Ensure image is a non-empty string or set to default value
     const imageValue = productDetails.image && productDetails.image.trim() !== '' 
       ? productDetails.image 
-      : '/placeholder.jpg'; // Use a default placeholder image
+      : '/placeholder.jpg';
     
-    // Check if the image data is too large
-    if (typeof imageValue === 'string' && imageValue.length > 5 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: 'Image data is too large. Please use a smaller image (under 5MB).' },
-        { status: 413 }
-      );
-    }
-    
-    // Update the product without using transactions
+    // Use a try-catch block specifically for database operations
     try {
-      // First update the main product
+      // First update the main product with simplified data
       await prisma.product.update({
         where: { id },
         data: {
           name: productDetails.name,
           description: productDetails.description,
           longDescription: productDetails.longDescription || null,
-          image: imageValue, // Use the validated image value
-          images: productDetails.images || [],
-          category: productDetails.category,
-          rating: productDetails.rating || 0,
-          reviews: productDetails.reviews || 0,
-          bestseller: productDetails.bestseller || false,
-          featured: productDetails.featured || false,
-          benefits: productDetails.benefits || [],
-          features: productDetails.features || [],
-          usageSuggestions: productDetails.usageSuggestions || [],
-          nutritionalInfo: productDetails.nutritionalInfo || {},
-          specs: productDetails.specs || {},
+          image: imageValue,
+          category: productDetails.category || 'uncategorized',
         },
       });
       
-      // Then handle variants separately
+      // Handle variants in a separate operation if they exist
       if (variants && variants.length > 0) {
         // Delete existing variants
         await prisma.sizeVariant.deleteMany({
@@ -127,6 +110,10 @@ export async function PUT(
           });
         }
       }
+      
+      // Revalidate the cache
+      revalidatePath('/admin/products');
+      revalidateTag('products');
       
       // Return the updated product with variants
       const productWithVariants = await prisma.product.findUnique({
@@ -184,22 +171,34 @@ export async function PATCH(
         ? { bestseller: data.bestseller } 
         : { featured: data.featured };
       
-      // Update the product and return it directly without storing in a variable
-      await prisma.product.update({
-        where: { id },
-        data: updateData,
-      });
-      
-      // Return the updated product with variants
-      const productWithVariants = await prisma.product.findUnique({
-        where: { id },
-        include: { variants: true },
-      });
-      
-      return NextResponse.json(productWithVariants);
+      try {
+        // Update the product with minimal data
+        await prisma.product.update({
+          where: { id },
+          data: updateData,
+        });
+        
+        // Revalidate the cache
+        revalidatePath('/admin/products');
+        revalidateTag('products');
+        
+        // Return the updated product with variants
+        const productWithVariants = await prisma.product.findUnique({
+          where: { id },
+          include: { variants: true },
+        });
+        
+        return NextResponse.json(productWithVariants);
+      } catch (dbError) {
+        console.error('Database error during simple update:', dbError);
+        return NextResponse.json({ 
+          error: `Database error: ${dbError instanceof Error ? dbError.message : String(dbError)}` 
+        }, { status: 500 });
+      }
     }
     
-    // For full updates, extract variants from the data
+    // For more complex updates, handle similarly to PUT but only update provided fields
+    // Extract variants from the data
     const { variants, ...productDetails } = data;
     
     // Validate the data for full updates

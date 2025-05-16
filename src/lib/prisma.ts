@@ -25,17 +25,16 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 // Configure Prisma to not use transactions if they're not supported
 const prisma = globalForPrisma.prisma || new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
-  // Add connection pooling
+  log: ['error'], // Reduce logging to only errors
   datasources: {
     db: {
       url: process.env.DATABASE_URL,
     },
   },
-  // Disable transactions for environments that don't support them
+  // Adjust transaction options for better stability
   transactionOptions: {
-    maxWait: 10000, // 10s
-    timeout: 5000, // 5s
+    maxWait: 5000, // 5s
+    timeout: 10000, // 10s
   }
 });
 

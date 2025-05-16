@@ -236,6 +236,13 @@ export default function ExcelProductUploader() {
         message: `Successfully uploaded ${result.count} products`,
       });
 
+      // Revalidate the products cache
+      await fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: '/admin/products', tag: 'products' }),
+      });
+
       // Refresh the products list
       router.refresh();
     } catch (err) {
