@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
 import { toast } from 'react-hot-toast'
 import PlaceholderImage from '@/components/ui/PlaceholderImage'
+import { motion, AnimatePresence } from 'framer-motion'
 
 // Add the calculateDiscount function at the top of your component
 const calculateDiscount = (originalPrice: number, currentPrice: number): number => {
@@ -16,12 +17,14 @@ const calculateDiscount = (originalPrice: number, currentPrice: number): number 
   return discount;
 };
 
-// Update the Product type to remove salePrice
+// Add type definition for Product at the top of the file
 type Product = {
   id: string;
   name: string;
-  price: number; // Keep this for backward compatibility
+  price: number;
   image: string;
+  secondaryImage?: string;
+  images?: string[];
   category: string;
   rating: number;
   reviews: number;
@@ -53,6 +56,110 @@ type CartItem = {
   image: string;
   variant?: string | null;
 }
+
+// Product Images component with slider functionality
+const ProductImageGallery = ({ product }: { product: Product }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const images = [
+    product.image,
+    ...(product.secondaryImage ? [product.secondaryImage] : []),
+    ...(product.images || [])
+  ].filter(Boolean);
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev: number) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev: number) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const goToImage = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-4">
+      {/* Main Image Slider */}
+      <div className="relative aspect-square mb-4 overflow-hidden rounded-md">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentImageIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="relative aspect-square"
+          >
+            {images.length > 0 ? (
+              <Image 
+                src={images[currentImageIndex]}
+                alt={`${product.name} - view ${currentImageIndex + 1}`}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                onError={(e) => {
+                  console.error('Image failed to load:', images[currentImageIndex]);
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.parentElement?.classList.add('image-error');
+                }}
+              />
+            ) : (
+              <PlaceholderImage />
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Navigation arrows - only show if there are multiple images */}
+        {images.length > 1 && (
+          <>
+            <button 
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md z-10 transition-all"
+              aria-label="Previous image"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+            <button 
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md z-10 transition-all"
+              aria-label="Next image"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Thumbnail Navigation */}
+      {images.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {images.map((img, index) => (
+            <button
+              key={index}
+              onClick={() => goToImage(index)}
+              className={`relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${
+                currentImageIndex === index ? 'border-amber-500' : 'border-transparent hover:border-gray-300'
+              }`}
+              aria-label={`View image ${index + 1}`}
+            >
+              <Image
+                src={img}
+                alt={`${product.name} thumbnail ${index + 1}`}
+                fill
+                className="object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function ProductPage() {
   const { id } = useParams()
@@ -225,29 +332,9 @@ export default function ProductPage() {
         
         {/* Product Main Section */}
         <div className="flex flex-col md:flex-row gap-8 mb-12">
-          {/* Product Image */}
+          {/* Product Images */}
           <div className="md:w-1/2">
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <div className="relative aspect-square">
-                {product.image ? (
-                  <Image 
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-contain"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    onError={(e) => {
-                      console.error('Image failed to load:', product.image);
-                      // Don't set fallback image here, let the error boundary handle it
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement?.classList.add('image-error');
-                    }}
-                  />
-                ) : (
-                  <PlaceholderImage />
-                )}
-              </div>
-            </div>
+            <ProductImageGallery product={product} />
           </div>
           
           {/* Product Details */}

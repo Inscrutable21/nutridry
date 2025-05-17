@@ -15,7 +15,8 @@ model Product {
   name             String
   description      String
   longDescription  String?
-  image            String?       // Make image nullable with ?
+  image            String?       // Main image (nullable with ?)
+  secondaryImage   String?       // Add secondary image field
   images           String[]
   category         String
   rating           Float         @default(0)
@@ -54,6 +55,7 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 
 
 

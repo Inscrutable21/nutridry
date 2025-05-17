@@ -32,6 +32,7 @@ type Product = {
   rating: number;
   reviews: number;
   image?: string;
+  secondaryImage?: string;
   images?: string[];
   benefits?: string[];
   features?: string[];
@@ -48,6 +49,7 @@ export default function ProductForm({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [mainImage, setMainImage] = useState<string>(initialData?.image || '');
+  const [secondaryImage, setSecondaryImage] = useState<string>(initialData?.secondaryImage || '');
   const [additionalImages, setAdditionalImages] = useState<string[]>(initialData?.images || []);
   const [formError, setFormError] = useState<string>(''); // Add the missing formError state
   
@@ -61,7 +63,8 @@ export default function ProductForm({
     featured: initialData?.featured || false,
     rating: initialData?.rating || 0,
     reviews: initialData?.reviews || 0,
-    image: initialData?.image || ''
+    image: initialData?.image || '',
+    secondaryImage: initialData?.secondaryImage || ''
   });
 
   // Initialize array states with optional chaining
@@ -211,6 +214,7 @@ export default function ProductForm({
       const productData = {
         ...formData,
         image: mainImage && mainImage.trim() !== '' ? mainImage : '/placeholder.jpg',
+        secondaryImage: secondaryImage && secondaryImage.trim() !== '' ? secondaryImage : '',
         images: additionalImages.filter(img => img.trim() !== ''),
         variants: variants.map(variant => ({
           id: variant.id,
@@ -238,7 +242,7 @@ export default function ProductForm({
       const timestamp = new Date().getTime();
       const url = initialData.id 
         ? `/api/products/${initialData.id}?t=${timestamp}` 
-        : '/api/products?t=${timestamp}';
+        : `/api/products?t=${timestamp}`;
       
       const method = initialData.id ? 'PUT' : 'POST';
       
@@ -417,12 +421,22 @@ export default function ProductForm({
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Images</h2>
           
-          <div>
-            <label className="block text-sm font-medium mb-1">Main Product Image</label>
-            <ImageUploader 
-              initialImage={mainImage} 
-              onImageChange={setMainImage} 
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Main Product Image (Front)</label>
+              <ImageUploader 
+                initialImage={mainImage} 
+                onImageChange={setMainImage} 
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Secondary Product Image (Back/Side)</label>
+              <ImageUploader 
+                initialImage={secondaryImage} 
+                onImageChange={setSecondaryImage} 
+              />
+            </div>
           </div>
           
           <div>
