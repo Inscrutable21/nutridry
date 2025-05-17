@@ -78,7 +78,7 @@ export async function PUT(
     
     // Use a try-catch block specifically for database operations
     try {
-      // First update the main product with simplified data
+      // Update the main product with ALL provided fields
       await prisma.product.update({
         where: { id },
         data: {
@@ -87,6 +87,17 @@ export async function PUT(
           longDescription: productDetails.longDescription || null,
           image: imageValue,
           category: productDetails.category || 'uncategorized',
+          // Include all other fields that might be updated
+          benefits: productDetails.benefits || [],
+          features: productDetails.features || [],
+          usageSuggestions: productDetails.usageSuggestions || [],
+          nutritionalInfo: productDetails.nutritionalInfo || {},
+          specs: productDetails.specs || {},
+          bestseller: productDetails.bestseller !== undefined ? productDetails.bestseller : false,
+          featured: productDetails.featured !== undefined ? productDetails.featured : false,
+          rating: productDetails.rating || 0,
+          reviews: productDetails.reviews || 0,
+          images: productDetails.images || [],
         },
       });
       
@@ -164,39 +175,6 @@ export async function PATCH(
     const id = (await params).id;
     const data = await request.json();
     
-    // Check if we're just updating a single field (like bestseller or featured)
-    if (Object.keys(data).length === 1 && (data.bestseller !== undefined || data.featured !== undefined)) {
-      // Simple update for a single field
-      const updateData = data.bestseller !== undefined 
-        ? { bestseller: data.bestseller } 
-        : { featured: data.featured };
-      
-      try {
-        // Update the product with minimal data
-        await prisma.product.update({
-          where: { id },
-          data: updateData,
-        });
-        
-        // Revalidate the cache
-        revalidatePath('/admin/products');
-        revalidateTag('products');
-        
-        // Return the updated product with variants
-        const productWithVariants = await prisma.product.findUnique({
-          where: { id },
-          include: { variants: true },
-        });
-        
-        return NextResponse.json(productWithVariants);
-      } catch (dbError) {
-        console.error('Database error during simple update:', dbError);
-        return NextResponse.json({ 
-          error: `Database error: ${dbError instanceof Error ? dbError.message : String(dbError)}` 
-        }, { status: 500 });
-      }
-    }
-    
     // For more complex updates, handle similarly to PUT but only update provided fields
     // Extract variants from the data
     const { variants, ...productDetails } = data;
@@ -209,7 +187,7 @@ export async function PATCH(
     // Ensure image is a non-empty string or set to default value
     const imageValue = productDetails.image && productDetails.image.trim() !== '' 
       ? productDetails.image 
-      : '/placeholder.jpg'; // Use a default placeholder image
+      : '/placeholder.jpg';
     
     // Update the product without using transactions
     try {

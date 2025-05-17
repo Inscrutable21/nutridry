@@ -9,7 +9,6 @@ import { productCategories } from '@/types/product';
 
 interface ProductFormProps {
   initialData?: Partial<Product>;
-  onSubmit?: (data: Product) => Promise<void>;
   isEditing?: boolean;
 }
 
@@ -44,7 +43,6 @@ type Product = {
 
 export default function ProductForm({ 
   initialData = {}, 
-  onSubmit, 
   isEditing = false 
 }: ProductFormProps) {
   const router = useRouter();
@@ -209,9 +207,6 @@ export default function ProductForm({
         throw new Error('Please add at least one variant with pricing and stock information');
       }
       
-      // For production, we'll use the data URLs directly
-      // This avoids issues with image uploads in production
-      
       // Prepare data for submission
       const productData = {
         ...formData,
@@ -239,76 +234,45 @@ export default function ProductForm({
         productData.id = initialData.id;
       }
       
-      if (onSubmit) {
-        await onSubmit(productData);
-      } else {
-        const url = initialData.id 
-          ? `/api/products/${initialData.id}` 
-          : '/api/products';
+      // Add a timestamp to prevent caching issues
+      const timestamp = new Date().getTime();
+      const url = initialData.id 
+        ? `/api/products/${initialData.id}?t=${timestamp}` 
+        : '/api/products?t=${timestamp}';
+      
+      const method = initialData.id ? 'PUT' : 'POST';
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(productData),
+          signal: controller.signal,
+          cache: 'no-store',
+        });
         
-        const method = initialData.id ? 'PUT' : 'POST';
+        clearTimeout(timeoutId);
         
-        // Set up timeout for the fetch request
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for larger payloads
-        
-        try {
-          // Add a timestamp to prevent caching issues
-          const timestamp = new Date().getTime();
-          const urlWithTimestamp = `${url}?t=${timestamp}`;
-          
-          const response = await fetch(urlWithTimestamp, {
-            method,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(productData),
-            signal: controller.signal,
-            // Add cache control
-            cache: 'no-store',
-          });
-          
-          clearTimeout(timeoutId);
-          
-          // Handle different response statuses
-          if (response.status === 405) {
-            throw new Error('Method not allowed. This might be a server configuration issue. Please try again later.');
-          }
-          
-          if (response.status === 413) {
-            throw new Error('Request too large. Try uploading smaller images or reducing the amount of data.');
-          }
-          
-          let responseData;
-          try {
-            // Try to parse the response as JSON
-            responseData = await response.json();
-          } catch (parseError) {
-            // If JSON parsing fails, use status text
-            console.error('Failed to parse JSON response:', parseError);
-            if (!response.ok) {
-              throw new Error(`Server error: ${response.status} ${response.statusText}`);
-            }
-          }
-          
-          if (!response.ok) {
-            // If we have JSON error data, use it
-            if (responseData && responseData.error) {
-              throw new Error(responseData.error);
-            } else {
-              throw new Error(`Failed to save product (Status: ${response.status})`);
-            }
-          }
-          
-          // Success - redirect to products page
-          router.push('/admin/products');
-        } catch (fetchError: unknown) {
-          // Type guard to check if fetchError is an Error object with a name property
-          if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-            throw new Error('Request timed out. Please try again with smaller images.');
-          }
-          throw fetchError;
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Server error: ${response.status}`);
         }
+        
+        // After successful update, revalidate the cache
+        await fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: '/admin/products', tag: 'products' }),
+        });
+        
+        router.push('/admin/products');
+      } catch (fetchError) {
+        throw fetchError;
       }
     } catch (error) {
       console.error('Error saving product:', error);
