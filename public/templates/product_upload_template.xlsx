@@ -1,0 +1,34 @@
+# This is a placeholder for the Excel template file.
+# You'll need to create an Excel file with the following columns:
+
+name
+description
+longDescription
+category
+bestseller (true/false)
+newArrival (true/false)
+featured (true/false)
+rating (number)
+reviews (number)
+benefits (bullet points with - or comma-separated)
+features (bullet points with - or comma-separated)
+usageSuggestions (bullet points with - or comma-separated)
+nutritionalInfo (JSON format or table format)
+specs (JSON format or key-value pairs)
+variants (JSON array or table format with | separators)
+
+# Example row for Rose Petal:
+# name: Rose Petal (Dried/Dehydrated) (Gulab Patti)
+# description: Fragrant dried rose petals, naturally rich in antioxidants, perfect for culinary, wellness, and beauty uses.
+# longDescription: Nutridry's Rose Petal (Dried/Dehydrated)... (full text)
+# category: Herbs & Floral
+# bestseller: false
+# newArrival: true
+# rating: 4.4
+# reviews: 160
+# benefits: - Rich in natural antioxidants\n- Supports skin health and radiance\n- Calms and soothes the senses\n- Adds natural aroma and color to recipes\n- Suitable for culinary and beauty uses
+# features: - 100% pure dried rose petals\n- No artificial colors, flavors, or preservatives\n- Edible and safe for consumption\n- Fragrant and visually appealing\n- Versatile for food, tea, and skincare
+# nutritionalInfo: {"Calories":"4 kcal","Total Fat":"0g","Carbohydrates":"1g","Dietary Fiber":"0.5g","Sugars":"0g","Protein":"0.1g","Vitamin C":"6mg"}
+# specs: {"Ingredient":"100% dried rose petals","Processing":"Handpicked and gently dried","Shelf Life":"12 months from packaging","Packaging":"Food-grade, resealable pouch","Origin":"India"}
+# usageSuggestions: - Add to herbal teas and infusions\n- Sprinkle over desserts, cakes, and sweets\n- Mix into salads for color and aroma\n- Use in homemade face masks and bath soaks\n- Infuse in syrups or beverages
+# variants: [{"size":"50g","price":99,"originalPrice":199,"stock":100},{"size":"100g","price":179,"originalPrice":299,"stock":100},{"size":"200g","price":249,"originalPrice":499,"stock":100}]

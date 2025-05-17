@@ -93,6 +93,14 @@ function SearchContent() {
         return 0;
     }
   })
+
+  // Ensure all products have required properties before passing to ProductGrid
+  const enhancedProducts = sortedResults.map(product => ({
+    ...product,
+    bestseller: product.bestseller === undefined ? false : product.bestseller,
+    description: product.description || '',
+    image: product.image || '/placeholder.jpg'
+  }));  
   
   const categories = ['Fruits', 'Vegetables', 'Spices & Herbs', 'Superfoods', 'Herbs & Floral', 'Herbs & Tea']
   
@@ -154,7 +162,7 @@ function SearchContent() {
             </div>
           </div>
           
-          <ProductGrid products={sortedResults} />
+          <ProductGrid products={enhancedProducts} />
         </>
       ) : query ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-100">

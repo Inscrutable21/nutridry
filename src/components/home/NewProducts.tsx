@@ -3,28 +3,10 @@
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import ProductCard from '@/components/products/ProductCard'
-import { Product } from '@/types' // Import the Product type
-
-// Define the ProductWithVariants type to match what ProductCard expects
-interface ProductWithVariants extends Product {
-  bestseller: boolean; // Required in ProductWithVariants
-  description: string; // Required in ProductWithVariants
-  variants?: Array<{
-    id: string;
-    size: string;
-    price: number;
-    stock: number;
-    originalPrice?: number;
-  }>;
-  salePrice?: number;
-  new?: boolean;
-}
+import { Product } from '@/types/product' // Import from /types/product instead of /types
 
 export default function NewProducts() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  // Remove unused state variables or use them in the component
-  // const [showLeftButton, setShowLeftButton] = useState(false)
-  // const [showRightButton, setShowRightButton] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -258,10 +240,11 @@ export default function NewProducts() {
   }
   
   // Transform products to ensure all required properties are present
-  const enhancedProducts: ProductWithVariants[] = products.map(product => ({
+  const enhancedProducts = products.map(product => ({
     ...product,
     bestseller: product.bestseller === undefined ? false : product.bestseller,
     description: product.description || '',
+    image: product.image || '/placeholder.jpg', // Ensure image is always a string
   }));
 
   return (
@@ -298,7 +281,7 @@ export default function NewProducts() {
             
             <div 
               ref={scrollContainerRef}
-              className="flex overflow-x-auto gap-6 pb-4 snap-x scrollbar-hide scroll-smooth"
+              className="flex overflow-x-auto space-x-6 pb-4 snap-x"
             >
               {enhancedProducts.map((product) => (
                 <div key={product.id} className="min-w-[280px] sm:min-w-[320px] flex-shrink-0 snap-start">

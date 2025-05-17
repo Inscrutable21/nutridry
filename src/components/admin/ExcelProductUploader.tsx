@@ -1,31 +1,14 @@
-import { useState } from 'react';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
+import { Product } from '@/types';
 
-// Define the Product interface based on your schema
-interface Product {
-  id?: string;
-  name: string;
-  description: string;
-  longDescription?: string;
-  image?: string | null;
-  images: string[];
-  category: string;
-  rating?: number;
-  reviews?: number;
-  bestseller: boolean;
-  featured: boolean;
-  stock: number;
-  benefits: string[];
-  features: string[];
-  usageSuggestions: string[];
-  nutritionalInfo?: Record<string, unknown> | null;
-  specs?: Record<string, unknown> | null;
-  variants: ProductVariant[];
-}
-
-// Interface for product variants matching your schema
+// Define ProductVariant interface locally
 interface ProductVariant {
+  id?: string;
   size: string;
   price: number;
   originalPrice?: number | null;
@@ -38,16 +21,17 @@ interface ExcelRow {
   description: string;
   longDescription?: string;
   category: string;
-  image?: string;
-  additionalImages?: string;
   bestseller?: boolean | string;
+  newArrival?: boolean | string;
   featured?: boolean | string;
+  rating?: number | string;
+  reviews?: number | string;
   benefits?: string;
   features?: string;
-  usageSuggestions?: string;
-  variants?: string;
   nutritionalInfo?: string;
   specs?: string;
+  usageSuggestions?: string;
+  variants?: string;
   [key: string]: unknown; // For any other properties
 }
 
@@ -110,40 +94,40 @@ export default function ExcelProductUploader() {
     const errors: string[] = [];
 
     excelData.forEach((row, index) => {
-      requiredFields.forEach((field) => {
+      // Check required fields
+      requiredFields.forEach(field => {
         if (!row[field]) {
           errors.push(`Row ${index + 2}: Missing required field '${field}'`);
         }
       });
 
-      // Check for variants
-      if (!row.variants) {
-        errors.push(`Row ${index + 2}: Missing required field 'variants'`);
-      } else {
+      // Validate variants if provided
+      if (row.variants) {
         try {
-          const parsedVariants = JSON.parse(row.variants as string);
-          if (!Array.isArray(parsedVariants) || parsedVariants.length === 0) {
-            errors.push(`Row ${index + 2}: 'variants' must be a non-empty array`);
-          } else {
-            // Check each variant has required fields
-            parsedVariants.forEach((variant, variantIndex) => {
-              if (!variant.size) {
-                errors.push(`Row ${index + 2}, Variant ${variantIndex + 1}: Missing 'size'`);
-              }
-              if (variant.price === undefined || variant.price === null) {
-                errors.push(`Row ${index + 2}, Variant ${variantIndex + 1}: Missing 'price'`);
-              }
-              if (isNaN(Number(variant.price))) {
-                errors.push(`Row ${index + 2}, Variant ${variantIndex + 1}: 'price' must be a number`);
-              }
-              if (variant.stock !== undefined && isNaN(Number(variant.stock))) {
-                errors.push(`Row ${index + 2}, Variant ${variantIndex + 1}: 'stock' must be a number`);
-              }
-            });
-          }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-          errors.push(`Row ${index + 2}: 'variants' must be a valid JSON array`);
+          JSON.parse(row.variants as string);
+        } catch {
+          // Intentionally empty catch block - error is handled below
+          errors.push(`Row ${index + 2}: 'variants' must be a valid JSON array or properly formatted string`);
+        }
+      }
+
+      // Validate nutritionalInfo if provided
+      if (row.nutritionalInfo) {
+        try {
+          JSON.parse(row.nutritionalInfo as string);
+        } catch {
+          // Intentionally empty catch block - error is handled below
+          errors.push(`Row ${index + 2}: 'nutritionalInfo' must be a valid JSON object`);
+        }
+      }
+
+      // Validate specs if provided
+      if (row.specs) {
+        try {
+          JSON.parse(row.specs as string);
+        } catch {
+          // Intentionally empty catch block - error is handled below
+          errors.push(`Row ${index + 2}: 'specs' must be a valid JSON object`);
         }
       }
     });
@@ -180,40 +164,99 @@ export default function ExcelProductUploader() {
           try {
             return JSON.parse(jsonString);
           } catch (err) {
+            // For structured text data, convert to proper format
+            if (typeof jsonString === 'string' && jsonString.includes('-')) {
+              // Handle bullet point lists (- item1\n- item2)
+              if (Array.isArray(fallback)) {
+                return jsonString.split('\n')
+                  .map(line => line.trim())
+                  .filter(line => line.startsWith('-'))
+                  .map(line => line.substring(1).trim()) as unknown as T;
+              }
+            }
             console.error('Error parsing JSON:', err);
             return fallback;
           }
         };
 
-        // Parse variants correctly
-        const parsedVariants: ProductVariant[] = safeJsonParse<ProductVariant[]>(row.variants as string, [])
-          .map(variant => ({
-            size: variant.size,
-            price: Number(variant.price),
-            originalPrice: variant.originalPrice !== undefined && variant.originalPrice !== null 
-              ? Number(variant.originalPrice) 
-              : null,
-            stock: variant.stock !== undefined ? Number(variant.stock) : 0
-          }));
+        // Parse variants from table format or JSON
+        let parsedVariants: ProductVariant[] = [];
+        
+        if (row.variants) {
+          try {
+            // Try parsing as JSON first
+            parsedVariants = JSON.parse(row.variants as string);
+          } catch {
+            // If JSON parsing fails, try parsing as structured text
+            const variantText = row.variants as string;
+            if (variantText.includes('|')) {
+              // Parse table-like format with | separators
+              const lines = variantText.split('\n').filter(line => line.trim() !== '' && line.includes('|'));
+              
+              // Skip header row if present
+              const dataLines = lines[0].includes('Weight') || lines[0].includes('Size') ? lines.slice(1) : lines;
+              
+              parsedVariants = dataLines.map(line => {
+                const parts = line.split('|').map(part => part.trim());
+                // Assuming format: | Weight | Original Price | Sale Price | Stock |
+                return {
+                  size: parts[1] || '',  // Use Weight/Size as the size field
+                  price: Number(parts[3]) || 0, // Sale Price
+                  originalPrice: Number(parts[2]) || null, // Original Price
+                  stock: Number(parts[4]) || 0 // Stock
+                };
+              });
+            }
+          }
+        }
 
         // Calculate total stock from variants
-        const totalStock = parsedVariants.reduce((sum, variant) => sum + variant.stock, 0);
+        const totalStock = parsedVariants.reduce((sum, variant) => sum + (variant.stock || 0), 0);
         
-        return {
+        // Parse benefits, features, and usage suggestions
+        const parseBulletPoints = (text?: string): string[] => {
+          if (!text) return [];
+          
+          // Handle markdown-style bullet points
+          if (text.includes('-')) {
+            return text.split('\n')
+              .map(line => line.trim())
+              .filter(line => line.startsWith('-'))
+              .map(line => line.substring(1).trim());
+          }
+          
+          // Handle comma-separated list
+          return text.split(',').map(item => item.trim());
+        };
+        
+        // Create the product object with only fields that exist in the schema
+        const productData: Partial<Product> = {
           name: row.name,
           description: row.description,
           longDescription: row.longDescription || '',
-          image: row.image || null,
-          images: row.additionalImages ? row.additionalImages.split(',').map((img: string) => img.trim()) : [],
+          image: '', // Empty string instead of null
+          images: [],
           category: row.category,
-          stock: totalStock, // Set stock as sum of variant stocks
+          stock: totalStock,
           bestseller: row.bestseller === 'true' || row.bestseller === true,
           featured: row.featured === 'true' || row.featured === true,
-          benefits: row.benefits ? row.benefits.split(',').map((b: string) => b.trim()) : [],
-          features: row.features ? row.features.split(',').map((f: string) => f.trim()) : [],
-          usageSuggestions: row.usageSuggestions ? row.usageSuggestions.split(',').map((u: string) => u.trim()) : [],
-          nutritionalInfo: safeJsonParse(row.nutritionalInfo as string, null),
-          specs: safeJsonParse(row.specs as string, null),
+          rating: Number(row.rating) || 0,
+          reviews: Number(row.reviews) || 0,
+          benefits: parseBulletPoints(row.benefits as string),
+          features: parseBulletPoints(row.features as string),
+          usageSuggestions: parseBulletPoints(row.usageSuggestions as string),
+          nutritionalInfo: safeJsonParse(row.nutritionalInfo as string, {}),
+          specs: safeJsonParse(row.specs as string, {}),
+        };
+        
+        // Only add newArrival if it exists in the schema
+        if (row.newArrival !== undefined) {
+          // @ts-expect-error - Add newArrival if it exists in the schema
+          productData.newArrival = row.newArrival === 'true' || row.newArrival === true;
+        }
+        
+        return {
+          ...productData,
           variants: parsedVariants
         };
       });

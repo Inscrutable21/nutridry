@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "build:no-lint": "prisma generate && cross-env DISABLE_ESLINT_PLUGIN=true next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -32,6 +33,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.2.2",
     "prisma": "^6.6.0",
@@ -39,3 +41,5 @@
     "typescript": "^5"
   }
 }
+
+

@@ -5,12 +5,23 @@ export interface SizeVariant {
   stock?: number;
 }
 
+// Define ProductVariant type
+export interface ProductVariant {
+  id?: string;
+  size: string;
+  price: number;
+  originalPrice?: number | null;
+  stock: number;
+}
+
 export interface Product {
   id: string;
   name: string;
   price: number; // Default/base price
   sizeVariants?: SizeVariant[]; // Optional size variants with different prices
-  image: string;
+  variants?: ProductVariant[]; // Now using the defined ProductVariant type
+  image: string | null; // Allow null for image
+  images?: string[];
   category: string;
   rating: number;
   reviews: number;
@@ -19,5 +30,11 @@ export interface Product {
   featured?: boolean;
   new?: boolean;
   description?: string;
+  longDescription?: string;
+  benefits?: string[];
+  features?: string[];
+  usageSuggestions?: string[];
+  nutritionalInfo?: Record<string, string | number>;
+  specs?: Record<string, string | number>;
 }
   

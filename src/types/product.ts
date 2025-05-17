@@ -14,9 +14,9 @@ export interface Product {
   description: string;
   longDescription?: string;
   benefits?: string[];
-  nutritionalInfo?: Record<string, string>;
+  nutritionalInfo?: Record<string, string | number>;
   features?: string[];
-  specs?: Record<string, string>;
+  specs?: Record<string, string | number>;
   usageSuggestions?: string[];
   variants?: Array<{
     id: string;
@@ -25,6 +25,7 @@ export interface Product {
     originalPrice?: number;
     stock: number;
   }>;
+  new?: boolean;
 }
 
 // Categories for dropdown selection

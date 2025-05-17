@@ -10,6 +10,14 @@ import useSWR from 'swr'
 interface EnhancedProduct extends Product {
   bestseller: boolean; // Ensure this is required, not optional
   description: string; // Ensure this is required, not optional
+  image: string; // Change from string | null to just string
+  variants?: {
+    id: string; // Make id required, not optional
+    size: string;
+    price: number;
+    originalPrice?: number; // Remove null type to match Product type
+    stock: number;
+  }[];
 }
 
 // Define the fetcher function with proper typing
@@ -82,6 +90,12 @@ export default function TopProducts() {
     ...product,
     bestseller: product.bestseller === undefined ? true : product.bestseller, // Default to true for top products
     description: product.description || '', // Default to empty string
+    image: product.image || '/placeholder.jpg', // Ensure image is always a string
+    variants: product.variants?.map(variant => ({
+      ...variant,
+      id: variant.id || `${product.id}-${variant.size}`, // Ensure id is always set
+      originalPrice: variant.originalPrice === null ? undefined : variant.originalPrice // Convert null to undefined
+    })),
   })) || [];
 
   // Use the transformed data

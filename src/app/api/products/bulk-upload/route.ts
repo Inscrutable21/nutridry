@@ -21,7 +21,7 @@ export async function POST(request: Request) {
         // Extract variants to create separately
         const { variants, ...productDetails } = productData;
 
-        // Create the product
+        // Create the product with proper field handling
         const product = await tx.product.create({
           data: {
             ...productDetails,
@@ -30,6 +30,8 @@ export async function POST(request: Request) {
             reviews: productDetails.reviews || 0,
             bestseller: productDetails.bestseller || false,
             featured: productDetails.featured || false,
+            // Only include newArrival if it exists in the schema
+            ...(productDetails.newArrival !== undefined && { newArrival: productDetails.newArrival || false }),
           },
         });
 

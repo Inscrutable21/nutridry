@@ -1,11 +1,12 @@
 // src/components/products/ProductGrid.tsx
 import ProductCard from './ProductCard'
-import { Product } from '@/types' // Import the Product type
+import { Product } from '@/types/product' // Import the Product type from the correct location
 
-// Create an enhanced product type that matches ProductWithVariants
+// Create an enhanced product type that matches what ProductCard expects
 interface EnhancedProduct extends Product {
   bestseller: boolean; // Ensure this is required
   description: string; // Ensure this is required
+  image: string; // Ensure this is a string, not string | null
 }
 
 export default function ProductGrid({ products }: { products: Product[] }) {
@@ -14,6 +15,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     ...product,
     bestseller: product.bestseller === undefined ? false : product.bestseller,
     description: product.description || '',
+    image: product.image || '/placeholder.jpg', // Ensure image is always a string
   }));
 
   return (
