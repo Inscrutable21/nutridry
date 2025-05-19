@@ -2,7 +2,11 @@
   "functions": {
     "src/app/api/**/*": {
       "memory": 1024,
-      "maxDuration": 10
+      "maxDuration": 60
+    },
+    "src/app/api/products/bulk-upload/route.ts": {
+      "memory": 2048,
+      "maxDuration": 60
     }
   },
   "headers": [
@@ -32,3 +36,4 @@
     }
   ]
 }
+

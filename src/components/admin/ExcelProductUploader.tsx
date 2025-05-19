@@ -261,6 +261,16 @@ export default function ExcelProductUploader() {
         };
       });
 
+      // Check if there are too many products
+      if (productsToUpload.length > 50) {
+        setUploadStatus({
+          status: 'error',
+          message: 'Too many products. Please limit your upload to 50 products at a time.',
+        });
+        setIsUploading(false);
+        return;
+      }
+
       // Add timeout to prevent hanging requests
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
