@@ -1,16 +1,8 @@
 {
-  "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "installCommand": "npm install",
-  "framework": "nextjs",
   "functions": {
     "src/app/api/**/*": {
       "memory": 1024,
-      "maxDuration": 60
-    },
-    "src/app/api/products/bulk-upload/route.ts": {
-      "memory": 2048,
-      "maxDuration": 60
+      "maxDuration": 10
     }
   },
   "headers": [
@@ -40,5 +32,3 @@
     }
   ]
 }
-
-
