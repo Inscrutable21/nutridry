@@ -261,33 +261,54 @@ export default function ExcelProductUploader() {
         };
       });
 
-      // Send data to API
-      const response = await fetch('/api/products/bulk-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ products: productsToUpload }),
-      });
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to upload products');
+      try {
+        // Send data to API with proper error handling
+        const response = await fetch('/api/products/bulk-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ products: productsToUpload }),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+
+        // Handle non-JSON responses
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const textResponse = await response.text();
+          throw new Error(`Server returned non-JSON response: ${textResponse.substring(0, 100)}...`);
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Server error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        setUploadStatus({
+          status: 'success',
+          message: `Successfully uploaded ${result.count} products`,
+        });
+
+        // Revalidate the products cache
+        await fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: '/admin/products', tag: 'products' }),
+        });
+
+        // Refresh the products list
+        router.refresh();
+      } catch (fetchError: unknown) {
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          throw new Error('Request timed out. The server took too long to respond.');
+        }
+        throw fetchError;
       }
-
-      const result = await response.json();
-      setUploadStatus({
-        status: 'success',
-        message: `Successfully uploaded ${result.count} products`,
-      });
-
-      // Revalidate the products cache
-      await fetch('/api/revalidate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: '/admin/products', tag: 'products' }),
-      });
-
-      // Refresh the products list
-      router.refresh();
     } catch (err) {
       console.error('Upload error:', err);
       setUploadStatus({
