@@ -1,4 +1,8 @@
 {
+  "version": 2,
+  "buildCommand": "npm run vercel-build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
   "functions": {
     "src/app/api/**/*": {
       "memory": 1024,
@@ -36,4 +40,5 @@
     }
   ]
 }
+
 
