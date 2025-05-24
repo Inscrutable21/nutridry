@@ -13,7 +13,7 @@ export default function NewArrivalsPage() {
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/products?featured=true');
+      const response = await fetch('/api/products?featured=true&limit=100');
       if (!response.ok) {
         throw new Error('Failed to fetch featured products');
       }

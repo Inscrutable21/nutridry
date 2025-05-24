@@ -20,7 +20,7 @@ export default function ProductsPage() {
       
       // Add cache-busting parameter to prevent stale cache issues
       const cacheBuster = new Date().getTime();
-      const response = await fetch(`/api/products?cacheBust=${cacheBuster}`, {
+      const response = await fetch(`/api/products?limit=100&cacheBust=${cacheBuster}`, {
         // Set longer timeout
         signal: AbortSignal.timeout(30000)
       });

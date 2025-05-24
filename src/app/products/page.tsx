@@ -63,7 +63,7 @@ function ProductsContent() {
       setIsLoading(true);
       try {
         // Build the API URL with query parameters
-        let url = '/api/products?';
+        let url = '/api/products?limit=100&'; // Increase limit to show all products
         if (activeCategory !== 'All') {
           url += `category=${encodeURIComponent(activeCategory)}&`;
         }
