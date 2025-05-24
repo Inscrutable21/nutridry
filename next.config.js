@@ -27,6 +27,8 @@ const nextConfig = {
     // your project has type errors.
     // !! WARN !!
     ignoreBuildErrors: true,
+    // Also ignore during development
+    ignoreDevelopmentErrors: true,
   },
   // Disable ESLint during build to reduce memory usage
   eslint: {

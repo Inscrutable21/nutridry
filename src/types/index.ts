@@ -37,4 +37,14 @@ export interface Product {
   nutritionalInfo?: Record<string, string | number>;
   specs?: Record<string, string | number>;
 }
+
+// Export the CartItem type as well for consistency
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  variant?: string | null;
+}
   

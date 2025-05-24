@@ -3,14 +3,23 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function SearchBar({ primaryColor = '#2b9348' }: { primaryColor?: string }) {
+interface SearchBarProps {
+  primaryColor?: string;
+  onSearch?: (query: string) => void;
+}
+
+export default function SearchBar({ primaryColor = '#2b9348', onSearch }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const router = useRouter()
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query)}`)
+      if (onSearch) {
+        onSearch(query.trim())
+      } else {
+        router.push(`/search?q=${encodeURIComponent(query)}`)
+      }
     }
   }
   

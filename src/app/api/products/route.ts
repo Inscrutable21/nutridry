@@ -1,8 +1,27 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma, Product as PrismaProduct, SizeVariant } from '@prisma/client';
 
-// In the GET function, add search query parameter handling
+// Define interface for the transformed product
+interface TransformedProduct extends Omit<PrismaProduct, 'variants'> {
+  variants?: SizeVariant[];
+  price: number;
+  stock: number;
+  salePrice: number | null;
+}
+
+// Define response data structure
+interface ProductsResponse {
+  products: TransformedProduct[];
+  pagination: {
+    total: number;
+    pages: number;
+    page: number;
+    limit: number;
+  }
+}
+
+// Add caching headers to improve performance
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -23,61 +42,90 @@ export async function GET(request: Request) {
         OR: [
           { name: { contains: searchQuery, mode: Prisma.QueryMode.insensitive } },
           { category: { contains: searchQuery, mode: Prisma.QueryMode.insensitive } },
-          { description: { contains: searchQuery, mode: Prisma.QueryMode.insensitive } },
         ]
       } : {})
     };
 
-    // Execute optimized query with Promise.all for parallel execution
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where: whereClause,
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          image: true,
-          category: true,
-          bestseller: true,
-          featured: true,
-          rating: true,
-          reviews: true,
-          // Only fetch variants if needed
-          variants: {
-            select: {
-              id: true,
-              size: true,
-              price: true,
-              originalPrice: true,
-              stock: true,
-            }
-          },
-          createdAt: true
-        },
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.product.count({ where: whereClause })
-    ]);
+    // Check if we have cached data for this query - increase cache time
+    const cacheKey = `products-${JSON.stringify(whereClause)}-${limit}-${page}`;
+    const globalWithCache = global as any;
     
-    // Transform the data to maintain backward compatibility
-    const transformedProducts = products.map(product => {
-      // Get the default variant (first one) for backward compatibility
+    if (!globalWithCache.productQueryCache) {
+      globalWithCache.productQueryCache = {};
+    }
+    
+    const cachedData = globalWithCache.productQueryCache[cacheKey];
+    const now = Date.now();
+    
+    // Use cached data if available and not expired (increased to 30 minutes)
+    if (cachedData && (now - cachedData.timestamp) < 1800000) {
+      return NextResponse.json(cachedData.data, {
+        headers: {
+          'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+          'CDN-Cache-Control': 'public, max-age=1800',
+        }
+      });
+    }
+
+    // Optimize database query - only select necessary fields
+    let products: any[] = [];
+    let total: number = 0;
+
+    try {
+      // Execute optimized query with Promise.all for parallel execution
+      const results = await Promise.all([
+        prisma.product.findMany({
+          where: whereClause,
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            image: true,
+            category: true,
+            bestseller: true,
+            featured: true,
+            rating: true,
+            reviews: true,
+            // Only fetch first variant for performance
+            variants: {
+              select: {
+                id: true,
+                price: true,
+                stock: true,
+              },
+              take: 1
+            },
+            createdAt: true
+          },
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        }),
+        prisma.product.count({ where: whereClause })
+      ]);
+      
+      products = results[0];
+      total = results[1];
+    } catch (dbError) {
+      console.error(`Database query failed:`, dbError);
+      throw dbError;
+    }
+    
+    // Transform the data - simplified for performance
+    const transformedProducts: TransformedProduct[] = products.map(product => {
       const defaultVariant = product.variants && product.variants.length > 0 
         ? product.variants[0] 
         : null;
       
       return {
         ...product,
-        // Add price and stock from the default variant for backward compatibility
         price: defaultVariant ? defaultVariant.price : 0,
         stock: defaultVariant ? defaultVariant.stock : 0,
-        salePrice: null // For backward compatibility
+        salePrice: null
       };
     });
     
-    const result = {
+    const result: ProductsResponse = {
       products: transformedProducts,
       pagination: {
         total,
@@ -87,11 +135,23 @@ export async function GET(request: Request) {
       }
     };
     
-    return NextResponse.json(result);
+    // Cache the result
+    globalWithCache.productQueryCache[cacheKey] = {
+      data: result,
+      timestamp: now
+    };
+    
+    // Return with caching headers
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+        'CDN-Cache-Control': 'public, max-age=1800',
+      }
+    });
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch products' },
+      { error: 'Failed to fetch products', message: error instanceof Error ? error.message : 'Database error' },
       { status: 500 }
     );
   }

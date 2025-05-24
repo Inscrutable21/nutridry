@@ -18,6 +18,11 @@ export default function customImageLoader({ src, width, quality }: {
       return `${baseUrl}${src}`;
     }
     
+    // For product images, use a CDN or image optimization service if available
+    if (process.env.NEXT_PUBLIC_IMAGE_CDN && src.includes('/products/')) {
+      return `${process.env.NEXT_PUBLIC_IMAGE_CDN}${src}?w=${width}&q=${quality || 75}`;
+    }
+    
     // For other local images, use the Next.js Image Optimization API
     return `${baseUrl}/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${quality || 75}`;
   }

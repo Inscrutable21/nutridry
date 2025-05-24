@@ -1,112 +1,105 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import HomeProductCard from '@/components/products/HomeProductCard'
+import { Product } from '@/types'
 import Link from 'next/link'
-import ProductCard from '@/components/products/ProductCard'
-import { Product } from '@/types/product' // Import from /types/product instead of /types
 
 export default function NewProducts() {
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
-  
-  // Fetch new arrivals (featured products) from API
-  useEffect(() => {
-    const fetchNewArrivals = async () => {
-      if (retryCount > 2) {
-        // Fall back to static data after 3 retries
-        setProducts(getFallbackProducts());
-        setIsLoading(false);
-        return;
-      }
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [showLeftButton, setShowLeftButton] = useState(false)
+  const [showRightButton, setShowRightButton] = useState(true)
 
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    
+    const fetchNewArrivals = async () => {
+      if (!isMounted) return;
+      
       setIsLoading(true);
       try {
-        // Add cache busting to prevent stale responses
-        const cacheBuster = new Date().getTime();
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // Increase to 15-second timeout
+        const cacheBuster = process.env.NODE_ENV === 'development' ? `&cacheBust=${Date.now()}` : '';
         
-        const response = await fetch(`/api/products?featured=true&limit=6&cacheBust=${cacheBuster}`, {
-          signal: controller.signal,
-          // Add cache control headers
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
+        // Use Promise.race for timeout instead of setTimeout + abort
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            if (isMounted) {
+              reject(new Error('Request timeout'));
+            }
+          }, 15000);
         });
         
-        clearTimeout(timeoutId);
+        // Race between the fetch and the timeout
+        const response = await Promise.race([
+          fetch(`/api/products?featured=true&limit=6${cacheBuster}`, {
+            signal: controller.signal,
+            next: { revalidate: 3600 }
+          }),
+          timeoutPromise
+        ]) as Response;
+        
+        if (!isMounted) return;
         
         if (!response.ok) {
           throw new Error(`Failed to fetch new arrivals: ${response.status}`);
         }
         
-        const data = await response.json();
-        if (data.products && data.products.length > 0) {
-          // Ensure all required properties are set
-          const productsWithDefaults = data.products.map((product: Product) => ({
-            ...product,
-            bestseller: product.bestseller === undefined ? false : product.bestseller,
-            description: product.description || '', // Set default empty string for description
-            // Add any other required properties that might be undefined
-          }));
-          setProducts(productsWithDefaults);
-          setError(null);
-        } else {
-          // If no products returned, use fallback data
-          setProducts(getFallbackProducts());
-        }
-      } catch (err) {
-        console.error('Error fetching new arrivals:', err);
+        const data = await response.json() as { products: Product[] };
+        if (!isMounted) return;
         
-        // Check specifically for timeout/abort errors
-        if (err instanceof Error) {
-          if (err.name === 'AbortError') {
-            setError('Request timed out. Loading limited product selection.');
-            setRetryCount(prev => prev + 1);
-            
-            // After first timeout, use fallback data but keep trying in background
-            setProducts(getFallbackProducts());
-          } else {
-            setError('Failed to load new arrivals');
-          }
-        }
+        setProducts(data.products || []);
+      } catch (error) {
+        if (!isMounted) return;
+        console.error('Error fetching new arrivals:', error);
+        setError('Failed to load new products');
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchNewArrivals();
-  }, [retryCount]);
-  
-  // Function to check if scroll buttons should be shown
-  // const checkScrollButtons = () => {
-  //   if (!scrollContainerRef.current) return
     
-  //   const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
-  //   setShowLeftButton(scrollLeft > 0)
-  //   setShowRightButton(scrollLeft < scrollWidth - clientWidth - 10)
-  // }
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [retryCount]);
+
+  // Use products directly in your component rendering
+  // No need for enhancedProducts variable
+
+  // Function to check if scroll buttons should be shown
+  const checkScrollButtons = () => {
+    if (!scrollContainerRef.current) return
+    
+    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
+    setShowLeftButton(scrollLeft > 0)
+    setShowRightButton(scrollLeft < scrollWidth - clientWidth - 10)
+  }
   
-  // useEffect(() => {
-  //   const scrollContainer = scrollContainerRef.current
-  //   if (scrollContainer) {
-  //     scrollContainer.addEventListener('scroll', checkScrollButtons)
-  //     window.addEventListener('resize', checkScrollButtons)
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', checkScrollButtons)
+      window.addEventListener('resize', checkScrollButtons)
       
-  //     // Initial check
-  //     checkScrollButtons()
+      // Initial check
+      checkScrollButtons()
       
-  //     return () => {
-  //       scrollContainer.removeEventListener('scroll', checkScrollButtons)
-  //       window.removeEventListener('resize', checkScrollButtons)
-  //     }
-  //   }
-  // }, [])
+      return () => {
+        scrollContainer.removeEventListener('scroll', checkScrollButtons)
+        window.removeEventListener('resize', checkScrollButtons)
+      }
+    }
+  }, [])
   
   // Scroll functions
   const scrollLeft = () => {
@@ -122,51 +115,6 @@ export default function NewProducts() {
     const container = scrollContainerRef.current
     container.scrollBy({ left: 300, behavior: 'smooth' })
   }
-  
-  // Fallback products in case of API failure
-  const getFallbackProducts = (): Product[] => {
-    return [
-      {
-        id: '1',
-        name: 'Dried Amla',
-        description: 'Premium quality dried amla with natural goodness.',
-        price: 12.99,
-        image: '/products/1.jpg',
-        category: 'Fruits',
-        rating: 4.5,
-        reviews: 24,
-        featured: true,
-        bestseller: false, // Explicitly set bestseller
-        stock: 15
-      },
-      {
-        id: '2',
-        name: 'Organic Wheatgrass',
-        description: 'Pure organic wheatgrass packed with nutrients.',
-        price: 14.99,
-        image: '/products/2.jpg',
-        category: 'Superfoods',
-        rating: 4.8,
-        reviews: 32,
-        featured: true,
-        bestseller: false, // Explicitly set bestseller
-        stock: 20
-      },
-      {
-        id: '3',
-        name: 'Dehydrated Red Onion Flakes',
-        description: 'Conveniently sliced and dehydrated red onion flakes.',
-        price: 9.49,
-        image: '/products/3.jpg',
-        category: 'Vegetables',
-        rating: 4.2,
-        reviews: 18,
-        featured: true,
-        bestseller: false, // Explicitly set bestseller
-        stock: 25
-      }
-    ];
-  };
   
   // Removed the unused ensureRequiredProps function
   
@@ -240,7 +188,7 @@ export default function NewProducts() {
   }
   
   // Transform products to ensure all required properties are present
-  const enhancedProducts = products.map(product => ({
+  const displayProducts = products.map(product => ({
     ...product,
     bestseller: product.bestseller === undefined ? false : product.bestseller,
     description: product.description || '',
@@ -283,9 +231,9 @@ export default function NewProducts() {
               ref={scrollContainerRef}
               className="flex overflow-x-auto space-x-6 pb-4 snap-x"
             >
-              {enhancedProducts.map((product) => (
-                <div key={product.id} className="min-w-[280px] sm:min-w-[320px] flex-shrink-0 snap-start">
-                  <ProductCard product={product} />
+              {displayProducts.map((product) => (
+                <div key={product.id} className="min-w-[262px] flex-shrink-0 snap-start">
+                  <HomeProductCard product={product} />
                 </div>
               ))}
             </div>

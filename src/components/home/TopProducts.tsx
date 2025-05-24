@@ -2,32 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import ProductCard from '@/components/products/ProductCard'
-import { Product } from '@/types' // Import the Product type
-import useSWR from 'swr'
-
-// Define a type that matches ProductWithVariants
-interface EnhancedProduct extends Product {
-  bestseller: boolean; // Ensure this is required, not optional
-  description: string; // Ensure this is required, not optional
-  image: string; // Change from string | null to just string
-  variants?: {
-    id: string; // Make id required, not optional
-    size: string;
-    price: number;
-    originalPrice?: number; // Remove null type to match Product type
-    stock: number;
-  }[];
-}
-
-// Define the fetcher function with proper typing
-const fetcher = (url: string) => fetch(url).then(res => {
-  if (!res.ok) throw new Error('Failed to fetch')
-  return res.json()
-})
+import HomeProductCard from '@/components/products/HomeProductCard'
+import { Product } from '@/types'
 
 export default function TopProducts() {
   const [activeCategory, setActiveCategory] = useState('All')
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const sliderRef = useRef<HTMLDivElement>(null)
   const [showLeftButton, setShowLeftButton] = useState(false)
@@ -35,79 +17,93 @@ export default function TopProducts() {
   const [touchStartX, setTouchStartX] = useState(0)
   const [touchEndX, setTouchEndX] = useState(0)
 
-  // Fallback products in case of API failure
-  const getFallbackProducts = (): EnhancedProduct[] => {
-    return [
-      {
-        id: '1',
-        name: 'Dried Amla',
-        description: 'Premium quality dried amla with natural goodness.',
-        price: 12.99,
-        image: '/products/1.jpg',
-        category: 'Fruits',
-        rating: 4.5,
-        reviews: 24,
-        bestseller: true,
-        stock: 15
-      },
-      {
-        id: '2',
-        name: 'Organic Wheatgrass',
-        description: 'Pure organic wheatgrass packed with nutrients.',
-        price: 14.99,
-        image: '/products/2.jpg',
-        category: 'Superfoods',
-        rating: 4.8,
-        reviews: 32,
-        bestseller: true,
-        stock: 20
-      },
-      {
-        id: '3',
-        name: 'Dehydrated Red Onion Flakes',
-        description: 'Conveniently sliced and dehydrated red onion flakes.',
-        price: 9.49,
-        image: '/products/3.jpg',
-        category: 'Vegetables',
-        rating: 4.2,
-        reviews: 18,
-        bestseller: true,
-        stock: 25
+  // Fetch bestseller products from API
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    
+    const fetchBestsellers = async () => {
+      if (!isMounted) return;
+      
+      setIsLoading(true);
+      try {
+        const cacheBuster = process.env.NODE_ENV === 'development' ? `&cacheBust=${Date.now()}` : '';
+        
+        // Increased timeout to 15 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            if (isMounted) {
+              reject(new Error('Request timeout'));
+            }
+          }, 15000); // Increased to 15 seconds
+        });
+        
+        // Race between the fetch and the timeout
+        const response = await Promise.race([
+          fetch(`/api/products?bestseller=true&limit=6${cacheBuster}`, {
+            signal: controller.signal,
+            next: { revalidate: 3600 }
+          }),
+          timeoutPromise
+        ]);
+        
+        if (!isMounted) return;
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch bestsellers: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (!isMounted) return;
+        
+        if (data.products && data.products.length > 0) {
+          const productsWithDefaults = data.products.slice(0, 6).map((product: any) => ({
+            ...product,
+            bestseller: true,
+            description: product.description || '',
+            image: product.image || '/placeholder.jpg',
+            category: product.category || 'Default',
+            rating: product.rating || 0,
+            reviews: product.reviews || 0,
+            stock: product.stock || 0
+          }));
+          
+          setProducts(productsWithDefaults);
+          setError(null);
+        } else {
+          setProducts([]);
+          setError("No bestseller products found");
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        
+        console.error('Error fetching bestsellers:', err);
+        setError('Unable to load bestsellers at this time');
+        setProducts([]);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-    ];
-  };
-  
-  // Use SWR for data fetching with caching
-  const { data, error: swrError, isLoading } = useSWR<{products: Product[]}>('/api/products?bestseller=true&limit=8', fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 120000, // 2 minutes
-    fallbackData: { products: getFallbackProducts() } // Your fallback data
-  })
+    };
 
-  // Transform the data to ensure all required properties are present
-  const transformedProducts: EnhancedProduct[] = data?.products.map(product => ({
-    ...product,
-    bestseller: product.bestseller === undefined ? true : product.bestseller, // Default to true for top products
-    description: product.description || '', // Default to empty string
-    image: product.image || '/placeholder.jpg', // Ensure image is always a string
-    variants: product.variants?.map(variant => ({
-      ...variant,
-      id: variant.id || `${product.id}-${variant.size}`, // Ensure id is always set
-      originalPrice: variant.originalPrice === null ? undefined : variant.originalPrice // Convert null to undefined
-    })),
-  })) || [];
+    fetchBestsellers();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [])
 
-  // Use the transformed data
-  const products = transformedProducts;
-  const error = swrError ? swrError.message : null;
-
-  const categories = ['All', ...new Set(products.map(product => product.category))];
-
+  // Filter products based on active category
   const filteredProducts = activeCategory === 'All' 
     ? products 
-    : products.filter(product => product.category === activeCategory);
-  
+    : products.filter(product => product.category === activeCategory)
+
+  // Get unique categories from products
+  const categories = ['All', ...new Set(products.map(product => product.category))]
+
   // Check if scroll buttons should be shown
   useEffect(() => {
     const checkScrollButtons = () => {
@@ -273,8 +269,8 @@ export default function TopProducts() {
             onTouchEnd={handleTouchEnd}
           >
             {filteredProducts.map(product => (
-              <div key={product.id} className="min-w-[280px] sm:min-w-[320px] flex-shrink-0 snap-start">
-                <ProductCard product={product} />
+              <div key={product.id} className="min-w-[262px] flex-shrink-0 snap-start">
+                <HomeProductCard product={product} />
               </div>
             ))}
           </div>

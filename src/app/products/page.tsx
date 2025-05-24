@@ -59,7 +59,12 @@ function ProductsContent() {
   
   // Fetch products from API
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    
     const fetchProducts = async () => {
+      if (!isMounted) return;
+      
       setIsLoading(true);
       try {
         // Build the API URL with query parameters
@@ -68,53 +73,62 @@ function ProductsContent() {
           url += `category=${encodeURIComponent(activeCategory)}&`;
         }
         
-        const response = await fetch(url);
+        // Add cache busting parameter only in development
+        if (process.env.NODE_ENV === 'development') {
+          url += `cacheBust=${Date.now()}`;
+        }
+        
+        // Increased timeout to 15 seconds
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            if (isMounted) {
+              reject(new Error('Request timeout'));
+            }
+          }, 15000); // Increased to 15 seconds
+        });
+        
+        // Race between the fetch and the timeout
+        const response = await Promise.race([
+          fetch(url, {
+            signal: controller.signal,
+            next: { revalidate: 3600 } // Revalidate every hour
+          }),
+          timeoutPromise
+        ]) as Response;
+        
+        if (!isMounted) return;
+        
+        // Process response
         if (!response.ok) {
-          throw new Error('Failed to fetch products');
+          throw new Error(`Server responded with ${response.status}`);
         }
-        const data = await response.json();
         
-        // Ensure all required properties are set
-        interface ProductData {
-          id: string;
-          name: string;
-          price: number;
-          image?: string;
-          category: string;
-          rating?: number;
-          reviews?: number;
-          stock?: number;
-          bestseller?: boolean;
-          featured?: boolean;
-          description?: string;
-          variants?: Array<{
-            id: string;
-            size: string;
-            price: number;
-            stock?: number;
-            originalPrice?: number;
-          }>;
-          // Add other specific properties you need
-          [key: string]: unknown; // Use unknown instead of any for safety
-        }
-
-        const productsWithDefaults = data.products.map((product: ProductData) => ({
-          ...product,
-          bestseller: product.bestseller === undefined ? false : product.bestseller,
-          description: product.description || '', // Set default empty string for description
-          // Add any other required properties that might be undefined
-        }));
+        const data = await response.json() as { products: Product[], pagination: any };
+        if (!isMounted) return;
         
-        setProducts(productsWithDefaults);
+        setProducts(data.products || []);
+        setError(null);
+        
       } catch (err) {
+        if (!isMounted) return;
+        
         console.error('Error fetching products:', err);
-        setError('Failed to load products. Please try again.');
+        // More user-friendly error message
+        setError('Unable to load products at this time. Please try again later.');
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchProducts();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [activeCategory]);
   
   // Filter products by price range

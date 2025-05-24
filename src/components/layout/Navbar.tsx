@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import SearchBar from './SearchBar'
 import { useCart } from '@/context/CartContext'
 
@@ -10,8 +11,10 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const cartDropdownRef = useRef<HTMLDivElement>(null)
   const { items, cartCount, cartTotal, removeFromCart } = useCart()
+  const router = useRouter()
   
   useEffect(() => {
     const handleScroll = () => {
@@ -90,27 +93,46 @@ export default function Navbar() {
           
           {/* Right Side Items */}
           <div className="flex items-center space-x-1 md:space-x-4">
+            {/* Desktop Search Bar */}
             <div className="hidden md:block mr-2">
               <SearchBar primaryColor={primaryColor} />
             </div>
             
+            {/* Mobile Search Icon - Only visible on mobile/tablet */}
             <button 
-              className="p-2 text-gray-700" 
-              style={{ transition: 'color 0.2s' }}
+              className="md:hidden p-2 text-gray-700 flex items-center justify-center" 
+              style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
+              onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
+              onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
+              onClick={() => {
+                console.log('Search icon clicked');
+                setSearchOpen(prev => !prev);
+              }}
+              aria-label="Search"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+            </button>
+            
+            {/* Favorites Icon */}
+            <button 
+              className="p-2 text-gray-700 flex items-center justify-center" 
+              style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
               onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
               onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
               aria-label="Favorites"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
               </svg>
             </button>
             
             {/* Cart Icon with Dropdown */}
             <div className="relative" ref={cartDropdownRef}>
               <button 
-                className="p-2 text-gray-700 relative" 
-                style={{ transition: 'color 0.2s' }}
+                className="p-2 text-gray-700 relative flex items-center justify-center" 
+                style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
                 onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
                 onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
                 onClick={() => setCartDropdownOpen(!cartDropdownOpen)}
@@ -215,8 +237,8 @@ export default function Navbar() {
             </div>
             
             <button 
-              className="p-2 text-gray-700" 
-              style={{ transition: 'color 0.2s' }}
+              className="p-2 text-gray-700 flex items-center justify-center"
+              style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
               onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
               onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
               aria-label="Account"
@@ -227,8 +249,8 @@ export default function Navbar() {
             </button>
             
             <button 
-              className="md:hidden p-2 text-gray-700"
-              style={{ transition: 'color 0.2s' }}
+              className="md:hidden p-2 text-gray-700 flex items-center justify-center"
+              style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
               onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
               onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -255,9 +277,6 @@ export default function Navbar() {
               animation: 'fadeIn 0.3s ease-out forwards',
             }}
           >
-            <div className="mb-4">
-              <SearchBar primaryColor={primaryColor} />
-            </div>
             <nav className="flex flex-col space-y-3">
               <MobileNavLink href="/" onClick={() => setMobileMenuOpen(false)} primaryColor={primaryColor}>Home</MobileNavLink>
               <MobileNavLink href="/products" onClick={() => setMobileMenuOpen(false)} primaryColor={primaryColor}>Shop</MobileNavLink>
@@ -279,6 +298,23 @@ export default function Navbar() {
             </nav>
           </div>
         )}
+
+        {/* Mobile Search Bar - Appears below navbar */}
+        {searchOpen && (
+          <div 
+            className="md:hidden w-full py-3 px-2 border-t mt-2 animate-fadeIn"
+          >
+            <SearchBar 
+              primaryColor={primaryColor} 
+              onSearch={(query: string) => {
+                // Handle search
+                router.push(`/products?search=${encodeURIComponent(query)}`);
+                // Close search bar after search
+                setSearchOpen(false);
+              }} 
+            />
+          </div>
+        )}
       </div>
       
       {/* Keyframe animation for mobile menu */}
@@ -286,6 +322,10 @@ export default function Navbar() {
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out forwards;
         }
       `}</style>
     </header>

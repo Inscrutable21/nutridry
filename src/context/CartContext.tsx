@@ -3,18 +3,18 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
-interface CartItem {
+export type CartItem = {
   id: string;
   name: string;
   price: number;
   quantity: number;
   image: string;
-  size?: string;
+  variant?: string | null;
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: CartItem) => void;
+  addToCart: (item: CartItem) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -58,18 +58,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCartCount(count);
   }, [items]);
   
-  const addToCart = (product: CartItem) => {
+  const addToCart = (item: CartItem) => {
     setItems(prevItems => {
-      const existingItemIndex = prevItems.findIndex(item => item.id === product.id);
+      // Check if the item is already in the cart (matching both id and variant)
+      const existingItemIndex = prevItems.findIndex(
+        cartItem => cartItem.id === item.id && cartItem.variant === item.variant
+      );
       
-      if (existingItemIndex > -1) {
-        // Item already exists, update quantity
-        const newItems = [...prevItems];
-        newItems[existingItemIndex].quantity += product.quantity;
-        return newItems;
+      if (existingItemIndex >= 0) {
+        // If the item exists, update its quantity
+        const updatedItems = [...prevItems];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: updatedItems[existingItemIndex].quantity + item.quantity
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('cart', JSON.stringify(updatedItems));
+        
+        return updatedItems;
       } else {
-        // Add new item
-        return [...prevItems, product];
+        // If the item doesn't exist, add it to the cart
+        const newItems = [...prevItems, item];
+        
+        // Save to localStorage
+        localStorage.setItem('cart', JSON.stringify(newItems));
+        
+        return newItems;
       }
     });
   };

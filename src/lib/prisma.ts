@@ -23,7 +23,7 @@ declare global {
 // exhausting your database connection limit.
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-// Configure Prisma to not use transactions if they're not supported
+// Configure Prisma with improved connection settings
 const prisma = globalForPrisma.prisma || new PrismaClient({
   log: ['error'], // Reduce logging to only errors
   datasources: {
@@ -33,8 +33,8 @@ const prisma = globalForPrisma.prisma || new PrismaClient({
   },
   // Adjust transaction options for better stability
   transactionOptions: {
-    maxWait: 5000, // 5s
-    timeout: 10000, // 10s
+    maxWait: 10000, // 10s (increased from 5s)
+    timeout: 30000, // 30s (increased from 10s)
   }
 });
 
