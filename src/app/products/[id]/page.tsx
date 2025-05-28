@@ -317,16 +317,16 @@ export default function ProductPage() {
   };
   
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-24 pb-16 dark:bg-gray-900">
       <div className="container mx-auto px-4 md:px-6">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <div className="flex items-center text-sm text-gray-500">
+          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
             <Link href="/" className="hover:text-amber-600 transition-colors">Home</Link>
             <span className="mx-2">/</span>
             <Link href="/products" className="hover:text-amber-600 transition-colors">Products</Link>
             <span className="mx-2">/</span>
-            <span>{product.name}</span>
+            <span className="text-gray-700 dark:text-gray-300">{product.name}</span>
           </div>
         </div>
         
@@ -348,7 +348,7 @@ export default function ProductPage() {
               </div>
             )}
             
-            <h1 className="text-3xl font-playfair mb-2">{product.name}</h1>
+            <h1 className="text-3xl font-playfair mb-2 text-gray-900 dark:text-white">{product.name}</h1>
             
             <div className="flex items-center mb-4">
               <div className="flex text-amber-500">
@@ -365,7 +365,9 @@ export default function ProductPage() {
                   </svg>
                 ))}
               </div>
-              <span className="text-sm text-gray-500 ml-2">{product.rating} ({product.reviews} reviews)</span>
+              <span className="ml-2 text-gray-600 dark:text-gray-400">
+                {product.rating} ({product.reviews} reviews)
+              </span>
             </div>
             
             <div className="text-2xl font-medium mb-4">
@@ -374,45 +376,47 @@ export default function ProductPage() {
                   {selectedVariant !== null ? (
                     product.variants[selectedVariant].originalPrice ? (
                       <>
-                        <span className="text-amber-600">₹{product.variants[selectedVariant].price.toFixed(2)}</span>
-                        <span className="text-gray-500 text-xl line-through ml-2">
+                        <span className="text-amber-600 dark:text-amber-500">₹{product.variants[selectedVariant].price.toFixed(2)}</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xl line-through ml-2">
                           ₹{product.variants[selectedVariant].originalPrice.toFixed(2)}
                         </span>
-                        <span className="text-green-600 text-sm ml-2">
+                        <span className="text-green-600 dark:text-green-500 text-sm ml-2">
                           {Math.round((1 - product.variants[selectedVariant].price / product.variants[selectedVariant].originalPrice) * 100)}% off
                         </span>
                       </>
                     ) : (
-                      <span className="text-amber-600">₹{product.variants[selectedVariant].price.toFixed(2)}</span>
+                      <span className="text-amber-600 dark:text-amber-500">₹{product.variants[selectedVariant].price.toFixed(2)}</span>
                     )
                   ) : (
                     product.variants[0].originalPrice ? (
                       <>
-                        <span className="text-amber-600">₹{product.variants[0].price.toFixed(2)}</span>
-                        <span className="text-gray-500 text-xl line-through ml-2">
+                        <span className="text-amber-600 dark:text-amber-500">₹{product.variants[0].price.toFixed(2)}</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xl line-through ml-2">
                           ₹{product.variants[0].originalPrice.toFixed(2)}
                         </span>
-                        <span className="text-green-600 text-sm ml-2">
+                        <span className="text-green-600 dark:text-green-500 text-sm ml-2">
                           {Math.round((1 - product.variants[0].price / product.variants[0].originalPrice) * 100)}% off
                         </span>
                       </>
                     ) : (
-                      <span className="text-amber-600">₹{product.variants[0].price.toFixed(2)}</span>
+                      <span className="text-amber-600 dark:text-amber-500">₹{product.variants[0].price.toFixed(2)}</span>
                     )
                   )}
                 </div>
               ) : (
-                <span className="text-amber-600">₹{product.price.toFixed(2)}</span>
+                <span className="text-amber-600 dark:text-amber-500">₹{product.price.toFixed(2)}</span>
               )}
             </div>
 
-            <p className="text-gray-700 mb-6">{product.description}</p>
+            <p className="text-gray-700 dark:text-gray-300 mb-6">{product.description}</p>
             
             {/* Stock Status */}
             <div className="mb-6">
               <div className="flex items-center">
                 <span className={`${
-                  product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-600'
+                  product.stock > 10 ? 'text-green-600 dark:text-green-500' : 
+                  product.stock > 0 ? 'text-amber-600 dark:text-amber-500' : 
+                  'text-red-600 dark:text-red-500'
                 }`}>
                   {product.stock > 10 
                     ? '✓ In Stock' 
@@ -423,32 +427,32 @@ export default function ProductPage() {
               </div>
             </div>
             
-            {/* Size Options - Updated to match the screenshot exactly */}
+            {/* Size Options */}
             {product.variants && product.variants.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-medium mb-3">Size Options</h3>
+                <h3 className="text-lg font-medium mb-3 text-gray-900 dark:text-white">Size Options</h3>
                 <div className="flex flex-wrap gap-3">
                   {product.variants.map((variant, index) => (
                     <button
                       key={variant.id}
                       className={`relative px-6 py-4 border rounded-md focus:outline-none ${
                         selectedVariant === index 
-                          ? 'border-amber-500 bg-amber-50'
-                          : 'border-gray-300 hover:border-amber-300'
+                          ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-400'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-amber-300 dark:hover:border-amber-500'
                       }`}
                       onClick={() => setSelectedVariant(index)}
                     >
                       <div className="flex flex-col items-center">
-                        <span className="text-lg font-medium mb-1">{variant.size}</span>
+                        <span className="text-lg font-medium mb-1 text-gray-900 dark:text-white">{variant.size}</span>
                         {variant.originalPrice ? (
-                          <span className="text-amber-600 font-medium">
+                          <span className="text-amber-600 dark:text-amber-500 font-medium">
                             ₹{variant.price.toFixed(2)}
-                            <span className="block text-sm text-gray-500 line-through">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 line-through ml-1">
                               ₹{variant.originalPrice.toFixed(2)}
                             </span>
                           </span>
                         ) : (
-                          <span className="text-amber-600 font-medium">₹{variant.price.toFixed(2)}</span>
+                          <span className="text-amber-600 dark:text-amber-500 font-medium">₹{variant.price.toFixed(2)}</span>
                         )}
                       </div>
                     </button>
@@ -459,40 +463,27 @@ export default function ProductPage() {
             
             {/* Quantity Selector */}
             <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <span className="font-medium mr-4">Quantity</span>
-                <div className="flex border border-gray-300 rounded-md">
-                  <button 
-                    onClick={decrementQuantity}
-                    disabled={quantity <= 1}
-                    className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-50 rounded-l-md"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
-                    </svg>
-                  </button>
-                  <input 
-                    type="number" 
-                    min="1" 
-                    max={product.stock}
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.min(Math.max(1, parseInt(e.target.value) || 1), product.stock))}
-                    className="w-14 h-10 border-x border-gray-300 text-center focus:outline-none focus:ring-0 bg-white"
-                  />
-                  <button 
-                    onClick={incrementQuantity}
-                    disabled={quantity >= product.stock}
-                    className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-50 rounded-r-md"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                  </button>
+              <h3 className="text-lg font-medium mb-3 text-gray-900 dark:text-white">Quantity</h3>
+              <div className="flex items-center">
+                <button 
+                  onClick={decrementQuantity}
+                  className="w-10 h-10 flex items-center justify-center border border-gray-300 dark:border-gray-600 rounded-l-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                >
+                  -
+                </button>
+                <div className="w-12 h-10 flex items-center justify-center border-t border-b border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  {quantity}
                 </div>
+                <button 
+                  onClick={incrementQuantity}
+                  className="w-10 h-10 flex items-center justify-center border border-gray-300 dark:border-gray-600 rounded-r-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                >
+                  +
+                </button>
               </div>
             </div>
             
-            {/* Dual Action Buttons */}
+            {/* Action Buttons */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <button 
                 className="px-6 py-3 text-white rounded-md flex items-center justify-center"
@@ -510,8 +501,8 @@ export default function ProductPage() {
                 Contact Now
               </button>
               <button 
-                className="px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors flex items-center justify-center"
                 onClick={handleAddToCart}
+                className="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
@@ -537,132 +528,122 @@ export default function ProductPage() {
         </div>
         
         {/* Product Tabs */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-12">
-          <div className="border-b border-gray-200 mb-6">
+        <div className="mb-12">
+          <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
             <div className="flex flex-wrap -mb-px">
               <button
-                className={`mr-8 py-4 text-sm font-medium border-b-2 ${
-                  activeTab === 'description'
-                    ? 'border-amber-600 text-amber-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
                 onClick={() => setActiveTab('description')}
+                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'description'
+                    ? 'border-amber-500 text-amber-600 dark:text-amber-500'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
               >
                 Description
               </button>
-              
-              {product.benefits && product.benefits.length > 0 && (
-                <button
-                  className={`mr-8 py-4 text-sm font-medium border-b-2 ${
-                    activeTab === 'benefits'
-                      ? 'border-amber-600 text-amber-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                  onClick={() => setActiveTab('benefits')}
-                >
-                  Benefits
-                </button>
-              )}
-              
-              {product.nutritionalInfo && Object.keys(product.nutritionalInfo).length > 0 && (
-                <button
-                  className={`mr-8 py-4 text-sm font-medium border-b-2 ${
-                    activeTab === 'nutrition'
-                      ? 'border-amber-600 text-amber-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                  onClick={() => setActiveTab('nutrition')}
-                >
-                  Nutritional Info
-                </button>
-              )}
-              
-              {product.usageSuggestions && product.usageSuggestions.length > 0 && (
-                <button
-                  className={`py-4 text-sm font-medium border-b-2 ${
-                    activeTab === 'usage'
-                      ? 'border-amber-600 text-amber-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                  onClick={() => setActiveTab('usage')}
-                >
-                  Usage Suggestions
-                </button>
-              )}
+              <button
+                onClick={() => setActiveTab('benefits')}
+                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'benefits'
+                    ? 'border-amber-500 text-amber-600 dark:text-amber-500'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                Benefits
+              </button>
+              <button
+                onClick={() => setActiveTab('nutritional')}
+                className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'nutritional'
+                    ? 'border-amber-500 text-amber-600 dark:text-amber-500'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                Nutritional Info
+              </button>
+              <button
+                onClick={() => setActiveTab('usage')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'usage'
+                    ? 'border-amber-500 text-amber-600 dark:text-amber-500'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                Usage Suggestions
+              </button>
             </div>
           </div>
           
-          <div>
+          <div className="prose max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-gray-300">
             {activeTab === 'description' && (
-              <div className="prose max-w-none">
-                <p className="text-gray-700 leading-relaxed">
-                  {product.longDescription || product.description}
-                </p>
-                
+              <div>
+                <p>{product.longDescription || product.description}</p>
                 {product.features && product.features.length > 0 && (
-                  <div className="mt-6">
-                    <h3 className="text-lg font-medium mb-3">Key Features</h3>
-                    <ul className="list-disc pl-5 space-y-2">
-                      {product.features.map((feature, index) => (
-                        <li key={index} className="text-gray-700">{feature}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  <ul className="mt-4 space-y-2 list-disc pl-5 text-gray-700 dark:text-gray-300">
+                    {product.features.map((feature, index) => (
+                      <li key={index}>{feature}</li>
+                    ))}
+                  </ul>
                 )}
               </div>
             )}
             
-            {activeTab === 'benefits' && product.benefits && (
+            {activeTab === 'benefits' && (
               <div>
-                <h3 className="text-lg font-medium mb-4">Health Benefits</h3>
-                <ul className="space-y-3">
-                  {product.benefits.map((benefit, index) => (
-                    <li key={index} className="flex items-start">
-                      <svg className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                      <span className="text-gray-700">{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
+                {product.benefits && product.benefits.length > 0 ? (
+                  <ul className="space-y-2 list-disc pl-5 text-gray-700 dark:text-gray-300">
+                    {product.benefits.map((benefit, index) => (
+                      <li key={index}>{benefit}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">No benefits information available for this product.</p>
+                )}
               </div>
             )}
             
-            {activeTab === 'nutrition' && product.nutritionalInfo && (
+            {activeTab === 'nutritional' && (
               <div>
-                <h3 className="text-lg font-medium mb-4">Nutritional Information</h3>
-                <div className="border rounded-lg overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <tbody className="divide-y divide-gray-200">
-                      {Object.entries(product.nutritionalInfo).map(([key, value]) => (
-                        <tr key={key}>
-                          <td className="px-6 py-3 text-sm font-medium text-gray-900 bg-gray-50">{key}</td>
-                          <td className="px-6 py-3 text-sm text-gray-700">{value}</td>
+                {product.nutritionalInfo && Object.keys(product.nutritionalInfo).length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nutrient</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        {Object.entries(product.nutritionalInfo).map(([nutrient, amount], index) => (
+                          <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{nutrient}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{amount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">No nutritional information available for this product.</p>
+                )}
               </div>
             )}
             
-            {activeTab === 'usage' && product.usageSuggestions && (
+            {activeTab === 'usage' && (
               <div>
-                <h3 className="text-lg font-medium mb-4">Usage Suggestions</h3>
-                <ul className="space-y-3">
-                  {product.usageSuggestions.map((suggestion, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-800 mr-3 font-medium text-sm">{index + 1}</span>
-                      <span className="text-gray-700">{suggestion}</span>
-                    </li>
-                  ))}
-                </ul>
+                {product.usageSuggestions && product.usageSuggestions.length > 0 ? (
+                  <ul className="space-y-2 list-disc pl-5 text-gray-700 dark:text-gray-300">
+                    {product.usageSuggestions.map((suggestion, index) => (
+                      <li key={index}>{suggestion}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">No usage suggestions available for this product.</p>
+                )}
               </div>
             )}
           </div>
         </div>
-        
-
       </div>
     </div>
   )

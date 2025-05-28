@@ -165,10 +165,10 @@ export default function TopProducts() {
   
   if (isLoading) {
     return (
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-200">
         <div className="container mx-auto px-4 md:px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-playfair text-center mb-4">Bestsellers</h2>
-          <p className="text-gray-600 text-center max-w-2xl mx-auto mb-8">
+          <h2 className="text-3xl md:text-4xl font-playfair text-center mb-4 text-gray-900 dark:text-white">Bestsellers</h2>
+          <p className="text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto mb-8">
             Our most popular products that customers love.
           </p>
           <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -180,10 +180,10 @@ export default function TopProducts() {
   
   if (error && filteredProducts.length === 0) {
     return (
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-200">
         <div className="container mx-auto px-4 md:px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-playfair text-center mb-4">Bestsellers</h2>
-          <p className="text-gray-600 text-center max-w-2xl mx-auto mb-4">
+          <h2 className="text-3xl md:text-4xl font-playfair text-center mb-4 text-gray-900 dark:text-white">Bestsellers</h2>
+          <p className="text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto mb-4">
             Our most popular products that customers love.
           </p>
           <p className="text-red-500 mb-4">{error}</p>
@@ -200,10 +200,10 @@ export default function TopProducts() {
   
   if (filteredProducts.length === 0) {
     return (
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-200">
         <div className="container mx-auto px-4 md:px-6">
-          <h2 className="text-3xl md:text-4xl font-playfair text-center mb-4">Bestsellers</h2>
-          <p className="text-gray-600 text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl md:text-4xl font-playfair text-center mb-4 text-gray-900 dark:text-white">Bestsellers</h2>
+          <p className="text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto mb-12">
             Our most popular products that customers love.
           </p>
           <p className="text-center text-gray-500">No bestseller products found in this category.</p>
@@ -213,10 +213,10 @@ export default function TopProducts() {
   }
   
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-200">
       <div className="container mx-auto px-4 md:px-6">
-        <h2 className="text-3xl md:text-4xl font-playfair text-center mb-4">Bestsellers</h2>
-        <p className="text-gray-600 text-center max-w-2xl mx-auto mb-8">
+        <h2 className="text-3xl md:text-4xl font-playfair text-center mb-4 text-gray-900 dark:text-white">Bestsellers</h2>
+        <p className="text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto mb-8">
           Our most popular products that customers love.
         </p>
         
@@ -230,7 +230,7 @@ export default function TopProducts() {
                 className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
                   activeCategory === category
                     ? 'bg-amber-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
                 {category}

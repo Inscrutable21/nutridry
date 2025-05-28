@@ -97,9 +97,9 @@ export default function CertificationSlider() {
   }
   
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="py-12 bg-gray-50 dark:bg-gray-800 transition-colors duration-200">
       <div className="container mx-auto px-4">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Our Quality Certifications</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 dark:text-white">Our Quality Certifications</h2>
         
         <div 
           className="relative overflow-hidden"

@@ -63,7 +63,7 @@ export default function Navbar() {
   return (
     <header 
       className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white shadow-md py-2' : 'bg-white py-3'
+        isScrolled ? 'bg-white dark:bg-gray-900 shadow-md py-2' : 'bg-white dark:bg-gray-900 py-3'
       }`} 
       style={{ fontFamily: 'Poppins, sans-serif' }}
     >
@@ -77,7 +77,7 @@ export default function Navbar() {
                 alt="TheNutriDry" 
                 fill
                 style={{ objectFit: 'contain', objectPosition: 'left' }}
-                className="max-h-full"
+                className="max-h-full dark:filter dark:brightness-150"
                 priority
               />
             </div>
@@ -336,13 +336,18 @@ function NavLink({ href, children, primaryColor }: { href: string, children: Rea
   return (
     <Link 
       href={href} 
-      className="text-gray-800 font-medium relative group"
+      className="text-gray-800 dark:text-gray-200 font-medium relative group"
       style={{ 
         fontFamily: 'Poppins, sans-serif',
         transition: 'color 0.2s'
       }}
       onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
       onMouseOut={(e) => e.currentTarget.style.color = '#1f2937'}
+      onMouseOutCapture={(e) => {
+        if (document.documentElement.classList.contains('dark')) {
+          e.currentTarget.style.color = '#e5e7eb';
+        }
+      }}
     >
       {children}
       <span 

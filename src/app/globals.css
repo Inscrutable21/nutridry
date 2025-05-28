@@ -2,44 +2,54 @@
 
 /* Import custom fonts if using web fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-/* Or another font of your choice, for example: */
-/* @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap'); */
-/* @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap'); */
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --font-primary: 'Poppins', sans-serif; /* Your primary font */
-  --font-secondary: Arial, Helvetica, sans-serif; /* Fallback font */
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-primary);
-  --font-mono: var(--font-geist-mono);
+  --card-bg: #ffffff;
+  --card-text: #171717;
+  --section-bg: #f9f9f9;
+  --font-primary: 'Poppins', sans-serif;
+  --font-secondary: Arial, Helvetica, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --card-bg: #1a1a1a;
+    --card-text: #ededed;
+    --section-bg: #121212;
+  }
+  
+  /* Force dark mode for all sections */
+  .bestsellers-section,
+  .new-arrivals-section,
+  section.bg-white,
+  section.bg-neutral-100 {
+    background-color: var(--section-bg) !important;
+    color: var(--foreground) !important;
+  }
+  
+  /* Ensure text colors are properly set in dark mode */
+  h2, h3, h4, p, span {
+    color: var(--foreground) !important;
+  }
+  
+  /* Fix specific text colors that might be hardcoded */
+  .text-gray-600, .text-gray-700, .text-gray-800, .text-gray-900 {
+    color: var(--foreground) !important;
+  }
+  
+  /* Fix certification text specifically */
+  .certification-text {
+    color: white !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-primary); /* Use the new font variable */
-  font-size: 16px; /* Optional: adjust the base font size */
-  line-height: 1.5; /* Optional: adjust the line height */
-  font-weight: 400; /* Optional: set default font weight */
-}
-
-/* Typography styles - optional but helpful for consistency */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-primary);
-  font-weight: 600; /* Make headings slightly bolder */
+/* Add a specific class for certification text */
+.certification-text {
+  color: #4b5563;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -52,42 +62,9 @@ h1, h2, h3, h4, h5, h6 {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
-/* Add to src/app/globals.css */
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.fruit-pulse {
-  animation: pulse 2s infinite;
-}
 
 /* Hide scrollbar during preloader */
 body.loading {
   overflow: hidden;
 }
-
-/* Terms of Service page specific styles */
-.terms-page h2 {
-  font-family: var(--font-primary);
-  font-weight: 600;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.terms-page p {
-  font-family: var(--font-primary);
-  font-size: 1rem;
-  line-height: 1.7;
-  margin-bottom: 1.25rem;
-  color: #4b5563;
-}
-/* Add these styles to your globals.css */
-
 

@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import React from 'react'
 import ProductCard from '@/components/products/ProductCard'
+import { useInView } from 'react-intersection-observer'
 
 // Update the Product type to match ProductWithVariants
 interface Product {
@@ -47,89 +48,122 @@ function ProductsContent() {
   
   const [priceRange, setPriceRange] = useState([0, 10000])
   const [filterOpen, setFilterOpen] = useState(false)
-  const [products, setProducts] = useState<Product[]>([]) // Add type annotation
+  const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null) // Add type annotation
-  
+  const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [retryCount, setRetryCount] = useState(0)
+  const { ref: loadMoreRef, inView } = useInView()
+
+  // Add retry mechanism for failed requests
+  const retryFetch = useCallback(() => {
+    setRetryCount(prev => prev + 1);
+  }, []);
+
+  // Reset retry count when category changes
   useEffect(() => {
-    if (categoryParam) {
-      setActiveCategory(categoryParam)
+    setRetryCount(0);
+  }, [activeCategory]);
+
+  // Retry effect
+  useEffect(() => {
+    if (retryCount > 0) {
+      fetchProducts(page);
     }
-  }, [categoryParam])
-  
+  }, [retryCount]);
+
   // Fetch products from API
-  useEffect(() => {
+  const fetchProducts = useCallback(async (pageNum = 1) => {
     let isMounted = true;
     const controller = new AbortController();
     
-    const fetchProducts = async () => {
+    if (pageNum === 1) setIsLoading(true);
+    try {
+      // Build the API URL with query parameters - reduce limit for faster loading
+      let url = `/api/products?limit=12&page=${pageNum}&`; // Reduced from 20 to 12 for faster loading
+      if (activeCategory !== 'All') {
+        url += `category=${encodeURIComponent(activeCategory)}&`;
+      }
+      
+      // Add cache busting parameter only in development
+      if (process.env.NODE_ENV === 'development') {
+        url += `cacheBust=${Date.now()}`;
+      }
+      
+      // Reduced timeout to 10 seconds
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          if (isMounted) {
+            reject(new Error('Request timeout'));
+          }
+        }, 10000); // Reduced from 15000 to 10000
+      });
+      
+      const response = await Promise.race([
+        fetch(url, {
+          signal: controller.signal,
+          next: { revalidate: 3600 }
+        }),
+        timeoutPromise
+      ]) as Response;
+      
       if (!isMounted) return;
       
-      setIsLoading(true);
-      try {
-        // Build the API URL with query parameters
-        let url = '/api/products?limit=100&'; // Increase limit to show all products
-        if (activeCategory !== 'All') {
-          url += `category=${encodeURIComponent(activeCategory)}&`;
-        }
-        
-        // Add cache busting parameter only in development
-        if (process.env.NODE_ENV === 'development') {
-          url += `cacheBust=${Date.now()}`;
-        }
-        
-        // Increased timeout to 15 seconds
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => {
-            if (isMounted) {
-              reject(new Error('Request timeout'));
-            }
-          }, 15000); // Increased to 15 seconds
-        });
-        
-        // Race between the fetch and the timeout
-        const response = await Promise.race([
-          fetch(url, {
-            signal: controller.signal,
-            next: { revalidate: 3600 } // Revalidate every hour
-          }),
-          timeoutPromise
-        ]) as Response;
-        
-        if (!isMounted) return;
-        
-        // Process response
-        if (!response.ok) {
-          throw new Error(`Server responded with ${response.status}`);
-        }
-        
-        const data = await response.json() as { products: Product[], pagination: any };
-        if (!isMounted) return;
-        
-        setProducts(data.products || []);
-        setError(null);
-        
-      } catch (err) {
-        if (!isMounted) return;
-        
-        console.error('Error fetching products:', err);
-        // More user-friendly error message
-        setError('Unable to load products at this time. Please try again later.');
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
       }
-    };
-
-    fetchProducts();
+      
+      const data = await response.json() as { products: Product[], pagination: any };
+      if (!isMounted) return;
+      
+      if (pageNum === 1) {
+        setProducts(data.products || []);
+      } else {
+        setProducts(prev => [...prev, ...data.products]);
+      }
+      
+      // Check if we have more products to load
+      setHasMore(data.pagination.page < data.pagination.pages);
+      setError(null);
+      
+    } catch (err) {
+      if (!isMounted) return;
+      
+      console.error('Error fetching products:', err);
+      setError('Unable to load products at this time. Please try again later.');
+    } finally {
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    }
     
-    // Cleanup function
     return () => {
       isMounted = false;
       controller.abort();
     };
   }, [activeCategory]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    
+    setPage(1);
+    fetchProducts(1);
+    
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [activeCategory, fetchProducts]);
+
+  useEffect(() => {
+    if (inView && hasMore && !isLoading) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchProducts(nextPage);
+    }
+  }, [inView, hasMore, isLoading, fetchProducts]); // Remove 'page' from dependencies
   
   // Filter products by price range
   const filteredProducts = products.filter(product => {
@@ -166,7 +200,7 @@ function ProductsContent() {
       <div className="text-center py-10">
         <p className="text-red-500 mb-4">{error}</p>
         <button 
-          onClick={() => window.location.reload()}
+          onClick={retryFetch}
           className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
         >
           Try Again
@@ -178,137 +212,76 @@ function ProductsContent() {
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       {/* Filters - Desktop */}
-      <aside className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-24 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h2 className="font-medium text-lg mb-4">Filters</h2>
-          
-          <div className="mb-6">
-            <h3 className="font-medium mb-3">Categories</h3>
-            <ul className="space-y-2">
-              {categories.map(category => (
-                <li key={category}>
-                  <button
-                    onClick={() => setActiveCategory(category)}
-                    className={`text-sm ${
-                      activeCategory === category 
-                        ? 'text-amber-600 font-medium' 
-                        : 'text-gray-700 hover:text-amber-600'
-                    }`}
-                  >
-                    {category}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          <div className="mb-6">
-            <h3 className="font-medium mb-3">Price Range</h3>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">₹{priceRange[0]}</span>
-              <span className="text-sm text-gray-600">₹{priceRange[1]}</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="10000"
-              step="100"
-              value={priceRange[1]}
-              onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
-            />
-          </div>
-          
-          <button className="w-full py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors text-sm">
-            Apply Filters
-          </button>
+      <div className="hidden lg:block w-64 space-y-6">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Categories</h3>
+          <ul className="space-y-2">
+            {categories.map(category => (
+              <li key={category}>
+                <button
+                  onClick={() => setActiveCategory(category)}
+                  className={`w-full text-left px-2 py-1 rounded ${
+                    activeCategory === category 
+                      ? 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100' 
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {category}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
-      </aside>
+        
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Price Range</h3>
+          {/* Price range slider */}
+        </div>
+      </div>
       
       {/* Main Content */}
       <div className="flex-grow">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-          <button
-            onClick={() => setFilterOpen(!filterOpen)}
-            className="flex items-center mb-4 sm:mb-0 lg:hidden px-4 py-2 border border-gray-300 rounded-md"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
-            </svg>
-            Filters
-          </button>
+        <div className="flex flex-wrap items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 md:mb-0">
+            {activeCategory === 'All' ? 'All Products' : activeCategory}
+          </h1>
           
-          <div className="flex items-center ml-auto">
-            <span className="text-sm text-gray-600 mr-2">Sort by:</span>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setFilterOpen(!filterOpen)}
+              className="lg:hidden flex items-center space-x-1 text-gray-700 dark:text-gray-300"
+            >
+              <span>Filters</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+            </button>
+            
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-600 focus:border-amber-600"
+              className="border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 text-sm bg-white dark:bg-gray-800 px-3 py-1.5"
             >
-              {sortOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <option value="featured">Featured</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="rating">Highest Rated</option>
             </select>
           </div>
         </div>
         
-        {/* Mobile Filters */}
-        {filterOpen && (
-          <div className="lg:hidden bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6">
-            <div className="mb-4">
-              <h3 className="font-medium mb-3">Categories</h3>
-              <div className="flex flex-wrap gap-2">
-                {categories.map(category => (
-                  <button
-                    key={category}
-                    onClick={() => setActiveCategory(category)}
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      activeCategory === category 
-                        ? 'bg-amber-600 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <h3 className="font-medium mb-3">Price Range</h3>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">₹{priceRange[0]}</span>
-                <span className="text-sm text-gray-600">₹{priceRange[1]}</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="10000"
-                step="100"
-                value={priceRange[1]}
-                onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
-              />
-            </div>
-            
-            <button 
-              className="w-full py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors text-sm"
-              onClick={() => setFilterOpen(false)}
-            >
-              Apply Filters
-            </button>
-          </div>
-        )}
-        
-        <p className="text-sm text-gray-600 mb-6">Showing {sortedProducts.length} products</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">Showing {sortedProducts.length} products</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {sortedProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
+        {hasMore && (
+          <div ref={loadMoreRef} className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
+          </div>
+        )}
       </div>
     </div>
   )
