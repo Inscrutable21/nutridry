@@ -68,3 +68,33 @@ body.loading {
   overflow: hidden;
 }
 
+/* Mobile-specific dark mode fixes */
+@media (prefers-color-scheme: dark) and (max-width: 1024px) {
+  /* Improve mobile category buttons */
+  .categories-sidebar {
+    background-color: #1e293b !important; /* Slightly lighter than the darkest background */
+  }
+  
+  .categories-sidebar button {
+    color: #e2e8f0 !important; /* Ensure text is visible */
+  }
+  
+  .categories-sidebar button.active {
+    background-color: #f59e0b !important; /* Amber color for active state */
+    color: white !important;
+  }
+  
+  /* Improve contrast for mobile */
+  .categories-sidebar h2 {
+    color: white !important;
+    font-weight: 600 !important;
+  }
+}
+
+/* Add a specific class for active category */
+button.active {
+  background-color: #f59e0b !important;
+  color: white !important;
+}
+
+

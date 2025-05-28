@@ -1,10 +1,12 @@
-"use client"
+'use client';
 
-import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
-import React from 'react'
-import ProductCard from '@/components/products/ProductCard'
-import { useInView } from 'react-intersection-observer'
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Suspense } from 'react';
+import ProductCard from '@/components/products/ProductCard';
+import { useInView } from 'react-intersection-observer';
 
 // Update the Product type to match ProductWithVariants
 interface Product {
@@ -210,97 +212,128 @@ function ProductsContent() {
   }
   
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
-      {/* Filters - Desktop */}
-      <div className="hidden lg:block w-64 space-y-6">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Categories</h3>
-          <ul className="space-y-2">
-            {categories.map(category => (
-              <li key={category}>
+    <>
+      {/* Filters and Sort Section */}
+      <div className="flex flex-col lg:flex-row gap-6 mb-8">
+        {/* Categories - Mobile Friendly */}
+        <div className={`lg:w-1/4 ${filterOpen ? 'block' : 'hidden lg:block'}`}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 categories-sidebar">
+            <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Categories</h2>
+            <div className="space-y-2">
+              {categories.map((category) => (
                 <button
+                  key={category}
                   onClick={() => setActiveCategory(category)}
-                  className={`w-full text-left px-2 py-1 rounded ${
-                    activeCategory === category 
-                      ? 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100' 
+                  className={`block w-full text-left px-3 py-2 rounded-md transition-colors ${
+                    activeCategory === category
+                      ? 'bg-amber-500 text-white dark:bg-amber-600'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
                   {category}
                 </button>
-              </li>
-            ))}
-          </ul>
+              ))}
+            </div>
+          </div>
+          
+          {/* Price Filter */}
+          <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 categories-sidebar">
+            <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Price Range</h2>
+            {/* ...existing price filter... */}
+          </div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Price Range</h3>
-          {/* Price range slider */}
-        </div>
-      </div>
-      
-      {/* Main Content */}
-      <div className="flex-grow">
-        <div className="flex flex-wrap items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 md:mb-0">
-            {activeCategory === 'All' ? 'All Products' : activeCategory}
-          </h1>
-          
-          <div className="flex items-center space-x-4">
+        {/* Products Grid */}
+        <div className="lg:w-3/4">
+          {/* Sort Controls with Filter Toggle */}
+          <div className="flex justify-between items-center mb-6 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+            <div className="flex items-center">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">Sort by:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                <option value="featured">Featured</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Highest Rated</option>
+              </select>
+            </div>
+            
+            {/* Mobile Filter Toggle - Improved */}
             <button
               onClick={() => setFilterOpen(!filterOpen)}
-              className="lg:hidden flex items-center space-x-1 text-gray-700 dark:text-gray-300"
+              className="lg:hidden px-3 py-2 bg-amber-500 text-white rounded-md text-sm flex items-center"
             >
-              <span>Filters</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              <span>{filterOpen ? 'Hide Filters' : 'Show Filters'}</span>
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
               </svg>
             </button>
-            
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 text-sm bg-white dark:bg-gray-800 px-3 py-1.5"
-            >
-              <option value="featured">Featured</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="rating">Highest Rated</option>
-            </select>
           </div>
+          
+          {/* Products Grid */}
+          {error ? (
+            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-md mb-6">
+              {error}
+            </div>
+          ) : sortedProducts.length === 0 ? (
+            <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 p-4 rounded-md">
+              No products found matching your criteria. Try adjusting your filters.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+          
+          {/* Load More */}
+          {hasMore && !error && (
+            <div ref={loadMoreRef} className="flex justify-center mt-8">
+              {isLoading && (
+                <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+              )}
+            </div>
+          )}
         </div>
-        
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">Showing {sortedProducts.length} products</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-        {hasMore && (
-          <div ref={loadMoreRef} className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
-          </div>
-        )}
       </div>
-    </div>
-  )
+    </>
+  );
 }
 
 // Main component that wraps the content with Suspense
 export default function ProductsPage() {
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-24 pb-16 bg-white dark:bg-gray-900 transition-colors duration-200">
       <div className="container mx-auto px-4 md:px-6">
         <header className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-playfair mb-2">Shop Our Collection</h1>
-          <p className="text-gray-600">Discover our premium dehydrated fruits and vegetables designed for healthy living.</p>
+          <h1 className="text-3xl md:text-4xl font-playfair mb-2 text-gray-900 dark:text-white">Shop Our Collection</h1>
+          <p className="text-gray-600 dark:text-gray-300">Discover our premium dehydrated fruits and vegetables designed for healthy living.</p>
         </header>
         
-        <Suspense fallback={<div className="flex justify-center py-10">Loading products...</div>}>
+        <Suspense fallback={<div className="flex justify-center py-10 text-gray-600 dark:text-gray-300">Loading products...</div>}>
           <ProductsContent />
         </Suspense>
       </div>
+      
+      {/* Add mobile-specific styles */}
+      <style jsx global>{`
+        @media (max-width: 1024px) {
+          .categories-sidebar {
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+          }
+          
+          .categories-sidebar button {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+          }
+        }
+      `}</style>
     </div>
   )
 }
