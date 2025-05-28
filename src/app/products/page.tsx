@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import ProductCard from '@/components/products/ProductCard';
 import { useInView } from 'react-intersection-observer';
+import LazyProductCard from '@/components/products/LazyProductCard';
 
 // Update the Product type to match ProductWithVariants
 interface Product {
@@ -284,8 +285,8 @@ function ProductsContent() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {sortedProducts.map((product, index) => (
+                <LazyProductCard key={product.id} product={product} index={index} />
               ))}
             </div>
           )}

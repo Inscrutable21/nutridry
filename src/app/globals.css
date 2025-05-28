@@ -97,4 +97,27 @@ button.active {
   color: white !important;
 }
 
+/* Add smooth scrolling for better staggered loading experience */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimize animations for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  
+  .animate-pulse {
+    animation: none;
+  }
+  
+  /* Disable staggered animations for accessibility */
+  .product-card-animation {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
 
