@@ -9,11 +9,11 @@ export const metadata = {
 
 export default function SustainabilityPage() {
   return (
-    <div className="pt-24 pb-16 bg-neutral-50">
+    <div className="pt-24 pb-16 bg-neutral-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 md:px-6">
         <header className="mb-12 text-center">
-          <h1 className="text-3xl md:text-5xl font-playfair mb-4">Our Sustainability Commitment</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <h1 className="text-3xl md:text-5xl font-playfair mb-4 dark:text-white">Our Sustainability Commitment</h1>
+          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             At TheNutriDry, sustainability isn&apos;t just a buzzword—it&apos;s at the core of everything we do. From farm to package, we&apos;re committed to practices that protect our planet for future generations.
           </p>
         </header>
@@ -40,8 +40,8 @@ export default function SustainabilityPage() {
           {/* Farming Section */}
           <section className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <h2 className="text-2xl font-playfair mb-4 text-gray-900">Sustainable Farming</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-playfair mb-4 text-gray-900 dark:text-white">Sustainable Farming</h2>
+              <div className="space-y-4 text-gray-700 dark:text-gray-300">
                 <p>
                   We partner exclusively with farmers who practice sustainable agriculture. This includes:
                 </p>
@@ -70,8 +70,8 @@ export default function SustainabilityPage() {
           {/* Production Section */}
           <section className="grid md:grid-cols-2 gap-8 items-center md:grid-flow-dense">
             <div className="md:col-start-2">
-              <h2 className="text-2xl font-playfair mb-4 text-gray-900">Eco-Friendly Production</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-playfair mb-4 text-gray-900 dark:text-white">Eco-Friendly Production</h2>
+              <div className="space-y-4 text-gray-700 dark:text-gray-300">
                 <p>
                   Our dehydration process is designed to minimize environmental impact while preserving maximum nutrition:
                 </p>
@@ -100,8 +100,8 @@ export default function SustainabilityPage() {
           {/* Packaging Section */}
           <section className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <h2 className="text-2xl font-playfair mb-4 text-gray-900">Sustainable Packaging</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-playfair mb-4 text-gray-900 dark:text-white">Sustainable Packaging</h2>
+              <div className="space-y-4 text-gray-700 dark:text-gray-300">
                 <p>
                   We&apos;re committed to reducing packaging waste through innovative solutions:
                 </p>
@@ -129,8 +129,8 @@ export default function SustainabilityPage() {
         </div>
         
         {/* Certifications */}
-        <section className="mt-16 bg-white p-8 rounded-lg shadow-sm">
-          <h2 className="text-2xl font-playfair mb-6 text-center text-gray-900">Our Certifications</h2>
+        <section className="mt-16 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm">
+          <h2 className="text-2xl font-playfair mb-6 text-center text-gray-900 dark:text-white">Our Certifications</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
             <div className="text-center">
               <div className="relative h-24 w-24 mx-auto mb-4">
@@ -141,7 +141,7 @@ export default function SustainabilityPage() {
                   style={{objectFit: 'contain'}}
                 />
               </div>
-              <h3 className="font-medium text-gray-900">Organic Certified</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">Organic Certified</h3>
             </div>
             <div className="text-center">
               <div className="relative h-24 w-24 mx-auto mb-4">
@@ -152,7 +152,7 @@ export default function SustainabilityPage() {
                   style={{objectFit: 'contain'}}
                 />
               </div>
-              <h3 className="font-medium text-gray-900">No Preservatives</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">No Preservatives</h3>
             </div>
             <div className="text-center">
               <div className="relative h-24 w-24 mx-auto mb-4">
@@ -163,7 +163,7 @@ export default function SustainabilityPage() {
                   style={{objectFit: 'contain'}}
                 />
               </div>
-              <h3 className="font-medium text-gray-900">No Additives</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">No Additives</h3>
             </div>
             <div className="text-center">
               <div className="relative h-24 w-24 mx-auto mb-4">
@@ -174,7 +174,7 @@ export default function SustainabilityPage() {
                   style={{objectFit: 'contain'}}
                 />
               </div>
-              <h3 className="font-medium text-gray-900">Make in India</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">Make in India</h3>
             </div>
           </div>
         </section>

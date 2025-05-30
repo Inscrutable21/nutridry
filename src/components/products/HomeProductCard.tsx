@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import customImageLoader from '@/lib/image-loader'
 import { toast } from 'react-hot-toast'
+import { CartItem } from '@/types/index'
 
 // A more compact version of ProductCard specifically for the homepage
 const HomeProductCard = memo(function HomeProductCard({ product }: { product: any }) {
@@ -13,17 +14,28 @@ const HomeProductCard = memo(function HomeProductCard({ product }: { product: an
   
   const productUrl = `/products/${product.id}`
   const imageUrl = product.image || '/placeholder.jpg'
-  const formattedPrice = product.price.toFixed(2)
-  
-  const handleAddToCart = () => {
-    addToCart({
+  const formattedPrice = `₹${product.price.toFixed(2)}`
+
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    
+    // Get the latest price from variants if available
+    const currentPrice = product.variants && product.variants.length > 0
+      ? product.variants[0].price
+      : product.price;
+    
+    const cartItem: CartItem = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: currentPrice,
       image: product.image || '/placeholder.jpg',
       quantity: 1,
       variant: product.variants && product.variants.length > 0 ? product.variants[0].size : null
-    })
+    }
+    
+    addToCart(cartItem);
+    
+    toast.success(`${product.name} added to cart`);
   }
   
   return (
@@ -71,5 +83,10 @@ const HomeProductCard = memo(function HomeProductCard({ product }: { product: an
 })
 
 export default HomeProductCard
+
+
+
+
+
 
 

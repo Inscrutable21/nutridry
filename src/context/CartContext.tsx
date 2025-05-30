@@ -1,33 +1,33 @@
-// context/CartContext.tsx
-'use client'
+'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
-
-export type CartItem = {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-  variant?: string | null;
-}
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { CartItem } from '@/types';
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
-  cartTotal: number;
   cartCount: number;
+  cartTotal: number;
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (id: string, variant: string | null) => void;
+  updateQuantity: (id: string, quantity: number, variant: string | null) => void;
+  clearCart: () => void;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+// Create context with default values
+const CartContext = createContext<CartContextType>({
+  items: [],
+  cartCount: 0,
+  cartTotal: 0,
+  addToCart: () => {},
+  removeFromCart: () => {},
+  updateQuantity: () => {},
+  clearCart: () => {},
+});
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
-  const [cartTotal, setCartTotal] = useState(0);
   const [cartCount, setCartCount] = useState(0);
+  const [cartTotal, setCartTotal] = useState(0);
   
   // Load cart from localStorage on initial load
   useEffect(() => {
@@ -59,46 +59,59 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items]);
   
   const addToCart = (item: CartItem) => {
+    // Validate the item has all required properties
+    if (!item.id || !item.name || item.price === undefined) {
+      console.error('Invalid cart item:', item);
+      return;
+    }
+    
     setItems(prevItems => {
       // Check if the item is already in the cart (matching both id and variant)
       const existingItemIndex = prevItems.findIndex(
         cartItem => cartItem.id === item.id && cartItem.variant === item.variant
       );
       
+      let newItems;
+      
       if (existingItemIndex >= 0) {
         // If the item exists, update its quantity
-        const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex] = {
-          ...updatedItems[existingItemIndex],
-          quantity: updatedItems[existingItemIndex].quantity + item.quantity
+        newItems = [...prevItems];
+        newItems[existingItemIndex] = {
+          ...newItems[existingItemIndex],
+          quantity: newItems[existingItemIndex].quantity + item.quantity
         };
-        
-        // Save to localStorage
-        localStorage.setItem('cart', JSON.stringify(updatedItems));
-        
-        return updatedItems;
       } else {
         // If the item doesn't exist, add it to the cart
-        const newItems = [...prevItems, item];
-        
-        // Save to localStorage
-        localStorage.setItem('cart', JSON.stringify(newItems));
-        
-        return newItems;
+        newItems = [...prevItems, item];
       }
+      
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('cart', JSON.stringify(newItems));
+      }
+      
+      return newItems;
     });
+    
+    // Update cart count
+    setCartCount(prev => {
+      const newCount = prev + 1;
+      return newCount;
+    });
+  }
+  
+  const removeFromCart = (id: string, variant: string | null) => {
+    setItems(prevItems => 
+      prevItems.filter(item => !(item.id === id && item.variant === variant))
+    );
   };
   
-  const removeFromCart = (productId: string) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== productId));
-  };
-  
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (id: string, quantity: number, variant: string | null) => {
     if (quantity < 1) return;
     
     setItems(prevItems => 
       prevItems.map(item => 
-        item.id === productId ? { ...item, quantity } : item
+        item.id === id && item.variant === variant ? { ...item, quantity } : item
       )
     );
   };

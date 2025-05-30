@@ -30,23 +30,21 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="flex flex-col min-h-screen bg-neutral-50">
-        <Preloader />
+    <html lang="en" className="scroll-smooth">
+      <body className={`${inter.variable} ${playfair.variable} font-sans antialiased`}>
         <AuthProvider>
           <CartProvider>
+            <Preloader />
             <Navbar />
-            <main className="flex-grow">{children}</main>
+            <main>{children}</main>
             <Footer />
-            <Toaster position="top-right" />
             <RecentPurchaseNotification />
+            <Toaster position="bottom-right" />
           </CartProvider>
         </AuthProvider>
-        
-        {/* Add a debug element to verify layout is loading */}
-        <div id="layout-debug" className="sr-only">Layout loaded</div>
       </body>
     </html>
   )
 }
+
 

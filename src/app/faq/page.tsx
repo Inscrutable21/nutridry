@@ -3,12 +3,6 @@
 
 import React, { useState } from 'react';
 
-// Remove the metadata export from this client component
-// export const metadata = {
-//   title: 'FAQ | TheNutriDry',
-//   description: 'Frequently asked questions about TheNutriDry products, ordering, shipping, and more.',
-// };
-
 interface FAQItem {
   question: string;
   answer: string;
@@ -131,11 +125,11 @@ export default function FAQPage() {
   };
   
   return (
-    <div className="pt-24 pb-16 bg-neutral-50">
+    <div className="pt-24 pb-16 bg-neutral-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 md:px-6">
         <header className="mb-12 text-center">
-          <h1 className="text-3xl md:text-5xl font-playfair mb-4">Frequently Asked Questions</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <h1 className="text-3xl md:text-5xl font-playfair mb-4 dark:text-white">Frequently Asked Questions</h1>
+          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Find answers to common questions about our products, ordering process, shipping, and more. Can't find what you're looking for? Contact us directly.
           </p>
         </header>
@@ -146,7 +140,11 @@ export default function FAQPage() {
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-4 py-2 rounded-full transition-colors ${activeCategory === category ? 'bg-amber-500 text-white' : 'bg-white text-gray-700 hover:bg-amber-100'}`}
+              className={`px-4 py-2 rounded-full transition-colors ${
+                activeCategory === category 
+                  ? 'bg-amber-500 text-white' 
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-amber-100 dark:hover:bg-amber-900/30'
+              }`}
             >
               {category}
             </button>
@@ -154,16 +152,16 @@ export default function FAQPage() {
         </div>
         
         {/* FAQ Accordion */}
-        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
           {filteredFaqs.map((faq, index) => (
-            <div key={index} className={`border-b border-gray-200 ${index === 0 ? 'rounded-t-lg' : ''} ${index === filteredFaqs.length - 1 ? 'border-b-0 rounded-b-lg' : ''}`}>
+            <div key={index} className={`border-b border-gray-200 dark:border-gray-700 ${index === 0 ? 'rounded-t-lg' : ''} ${index === filteredFaqs.length - 1 ? 'border-b-0 rounded-b-lg' : ''}`}>
               <button
                 onClick={() => toggleItem(faq.question)}
-                className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors focus:outline-none"
+                className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors focus:outline-none"
               >
-                <span className="font-medium text-gray-900">{faq.question}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{faq.question}</span>
                 <svg
-                  className={`w-5 h-5 text-gray-500 transform transition-transform ${openItems[faq.question] ? 'rotate-180' : ''}`}
+                  className={`w-5 h-5 text-gray-500 dark:text-gray-400 transform transition-transform ${openItems[faq.question] ? 'rotate-180' : ''}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -172,7 +170,7 @@ export default function FAQPage() {
                 </svg>
               </button>
               <div className={`overflow-hidden transition-all duration-300 ${openItems[faq.question] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                <div className="px-6 pb-4 text-gray-600">
+                <div className="px-6 pb-4 text-gray-600 dark:text-gray-300">
                   {faq.answer}
                 </div>
               </div>
@@ -181,9 +179,9 @@ export default function FAQPage() {
         </div>
         
         {/* Contact Section */}
-        <div className="mt-16 bg-white p-8 rounded-lg shadow-sm text-center">
-          <h2 className="text-2xl font-playfair mb-4">Still Have Questions?</h2>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+        <div className="mt-16 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm text-center">
+          <h2 className="text-2xl font-playfair mb-4 dark:text-white">Still Have Questions?</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
             Our customer service team is here to help. Reach out to us through any of the methods below.
           </p>
           <div className="flex flex-col md:flex-row justify-center gap-6 max-w-2xl mx-auto">

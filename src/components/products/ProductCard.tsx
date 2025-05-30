@@ -7,27 +7,38 @@ import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import customImageLoader from '@/lib/image-loader'
 import { toast } from 'react-hot-toast'
+import { formatCurrency } from '@/lib/formatCurrency'
+import { Product, CartItem } from '@/types'
 
-// Explicitly type the product parameter
-const ProductCard = memo(function ProductCard({ product }: { product: any }) {
+// Use the Product type for the product parameter
+const ProductCard = memo(function ProductCard({ product }: { product: Product }) {
   const { addToCart } = useCart()
   
   // Precompute values to avoid recalculations during render
   const productUrl = `/products/${product.id}`
   const imageUrl = product.image || '/placeholder.jpg'
-  const formattedPrice = product.price.toFixed(2)
+  const formattedPrice = formatCurrency(product.price)
   
-  const handleAddToCart = () => {
-    const cartItem = {
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    
+    // Get the latest price from variants if available
+    const currentPrice = product.variants && product.variants.length > 0
+      ? product.variants[0].price
+      : product.price;
+      
+    const cartItem: CartItem = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: currentPrice,
       image: product.image || '/placeholder.jpg',
       quantity: 1,
       variant: product.variants && product.variants.length > 0 ? product.variants[0].size : null
     }
     
-    addToCart(cartItem)
+    addToCart(cartItem);
+    
+    toast.success(`${product.name} added to cart`);
   }
   
   return (
@@ -58,15 +69,9 @@ const ProductCard = memo(function ProductCard({ product }: { product: any }) {
           {product.shortDescription || product.category}
         </p>
         <div className="mt-auto flex items-center justify-between">
-          <span className="font-semibold text-gray-900 dark:text-white">
-            ₹{product.price.toLocaleString()}
-          </span>
+          <span className="text-gray-900 font-medium">{formattedPrice}</span>
           <button 
-            onClick={(e) => {
-              e.preventDefault();
-              addToCart(product);
-              toast.success(`${product.name} added to cart`);
-            }}
+            onClick={handleAddToCart}
             className="p-2 text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-full transition-colors"
             aria-label="Add to cart"
           >

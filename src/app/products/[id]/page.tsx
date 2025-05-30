@@ -54,7 +54,7 @@ type CartItem = {
   price: number;
   quantity: number;
   image: string;
-  variant?: string | null;
+  variant: string | null; // Changed from variant?: string | null
 }
 
 // Product Images component with slider functionality
@@ -269,6 +269,9 @@ export default function ProductPage() {
     };
     
     addToCart(cartItem);
+    
+    // Force UI update
+    setQuantity(1);
     
     toast.success(`Added ${quantity} ${product.name} to cart`);
   }
