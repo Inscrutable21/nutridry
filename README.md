@@ -162,13 +162,14 @@ This project is proprietary and owned by TheNutriDry. All rights reserved.
 
 ## 👥 Team
 
-- **Product Owner**: [Name](mailto:email@example.com)
-- **Lead Developer**: [Name](mailto:email@example.com)
-- **UI/UX Designer**: [Name](mailto:email@example.com)
+- **Product Owner**: [Anand Singh](mailto:anandsinghoffical21@gmail.com)
+- **Lead Developer**: [Anand Singh](mailto:anandsinghoffical21@gmail.com)
+- **UI/UX Designer**: [Anand Singh](mailto:anandsinghoffical21@gmail.com)
 
 ## 📞 Contact
 
-For inquiries about this project, please contact [support@thenutridry.com](mailto:support@thenutridry.com).
+For inquiries about this project, please contact [info.nutridry@gmail.com](mailto:info.nutridry@gmail.com).
+
 
 
 
