@@ -85,5 +85,5 @@ const ProductCard = memo(function ProductCard({ product }: { product: Product })
   )
 })
 
-// Add this default export
 export default ProductCard
+

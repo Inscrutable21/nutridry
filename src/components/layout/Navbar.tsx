@@ -217,7 +217,7 @@ export default function Navbar() {
         {/* Mobile Search Bar - Appears below navbar */}
         {searchOpen && (
           <div 
-            className="md:hidden w-full py-3 px-2 border-t mt-2 animate-fadeIn"
+            className="md:hidden w-full py-3 px-2 border-t mt-2 animate-fadeIn dark:border-gray-700"
           >
             <SearchBar 
               primaryColor={primaryColor} 

@@ -45,14 +45,14 @@ export default function TopProducts() {
             next: { revalidate: 3600 }
           }),
           timeoutPromise
-        ]);
-        
+        ]) as Response;
+
         if (!isMounted) return;
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch bestsellers: ${response.status}`);
         }
-        
+
         const data = await response.json();
         if (!isMounted) return;
         
@@ -163,6 +163,14 @@ export default function TopProducts() {
     }
   }
   
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
+      setShowLeftButton(scrollLeft > 0)
+      setShowRightButton(scrollLeft < scrollWidth - clientWidth - 10)
+    }
+  }
+
   if (isLoading) {
     return (
       <section className="py-16 bg-white dark:bg-gray-900 transition-colors duration-200">
@@ -239,12 +247,7 @@ export default function TopProducts() {
           </div>
         </div>
         
-        {/* Error notification if using fallback data */}
-        {error && (
-          <div className="mb-6 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm text-center">
-            {error}
-          </div>
-        )}
+        {/* Remove any border-bottom, hr, or divider that might be here */}
         
         {/* Product slider */}
         <div className="relative" ref={sliderRef}>
@@ -261,15 +264,13 @@ export default function TopProducts() {
             </button>
           )}
           
-          <div
+          <div 
             ref={scrollContainerRef}
-            className="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            className="flex overflow-x-auto scrollbar-hide gap-4 pb-4 scroll-smooth snap-x"
+            onScroll={handleScroll}
           >
             {filteredProducts.map(product => (
-              <div key={product.id} className="min-w-[262px] flex-shrink-0 snap-start">
+              <div key={product.id} className="min-w-[300px] w-[300px] flex-shrink-0 snap-start">
                 <HomeProductCard product={product} />
               </div>
             ))}

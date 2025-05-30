@@ -1,7 +1,7 @@
 'use client'
 
 import { useInView } from 'react-intersection-observer';
-import ProductCard from './ProductCard';
+import ProductCard from '@/components/products/ProductCard';
 import { Product } from '@/types';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -69,6 +69,7 @@ export default function LazyProductCard({ product, index = 0 }: { product: Produ
     </div>
   );
 }
+
 
 
 

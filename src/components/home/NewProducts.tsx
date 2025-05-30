@@ -42,17 +42,17 @@ export default function NewProducts() {
           }),
           timeoutPromise
         ]) as Response;
-        
+
         if (!isMounted) return;
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch new arrivals: ${response.status}`);
         }
-        
-        const data = await response.json();
-        
+
+        const data = await response.json(); // Removed type assertion
+
         if (!isMounted) return;
-        
+
         if (data.products && data.products.length > 0) {
           setProducts(data.products);
           setError(null);
@@ -160,7 +160,7 @@ export default function NewProducts() {
               onScroll={handleScroll}
             >
               {displayProducts.map(product => (
-                <div key={product.id} className="min-w-[250px] flex-shrink-0 product-card">
+                <div key={product.id} className="min-w-[300px] w-[300px] flex-shrink-0 product-card">
                   <HomeProductCard product={product} />
                 </div>
               ))}

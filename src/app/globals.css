@@ -29,6 +29,17 @@
   section.bg-neutral-100 {
     background-color: var(--section-bg) !important;
     color: var(--foreground) !important;
+    border-bottom: none !important; /* Remove any bottom border */
+  }
+  
+  /* Remove any horizontal lines between sections */
+  section + section {
+    border-top: none !important;
+  }
+
+  /* Ensure no dividers between components */
+  .container > div {
+    border-bottom: none !important;
   }
   
   /* Ensure text colors are properly set in dark mode */
@@ -166,5 +177,31 @@ html {
   }
 }
 
+/* Remove horizontal bars/separators */
+hr,
+.horizontal-divider,
+.separator,
+div[role="separator"],
+.divider {
+  display: none !important;
+}
 
+/* Remove borders that might appear as horizontal lines */
+section, 
+.section, 
+.container, 
+.content-section {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+/* Target specific horizontal bars */
+.container::after,
+.container::before,
+section::after,
+section::before {
+  display: none !important;
+  content: none !important;
+  border: none !important;
+}
 
