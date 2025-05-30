@@ -1,4 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TheNutriDry - Premium Dehydrated Products E-commerce
+
+![TheNutriDry](public/logo.svg)
+
+This is a modern e-commerce platform built with Next.js for TheNutriDry, offering premium quality dehydrated fruits and vegetables that are 100% natural with no additives or preservatives.
+
+## Features
+
+- **Responsive Design**: Fully responsive UI that works on mobile, tablet, and desktop
+- **Dark Mode Support**: Automatic and manual dark mode switching
+- **Product Catalog**: Browse products by category with search and filtering
+- **User Authentication**: Secure login and registration system
+- **Shopping Cart**: Add products to cart with quantity management
+- **Checkout Process**: Streamlined checkout with address and payment integration
+- **Admin Dashboard**: Manage products, orders, and inventory
+- **SEO Optimized**: Built with best practices for search engine visibility
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, Tailwind CSS
+- **State Management**: React Context API, SWR for data fetching
+- **Database**: MongoDB with Prisma ORM
+- **Authentication**: NextAuth.js
+- **Animations**: Framer Motion
+- **Deployment**: Vercel
 
 ## Getting Started
 
@@ -16,21 +40,30 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/` - Next.js App Router pages and layouts
+- `components/` - Reusable UI components
+- `context/` - React Context providers
+- `lib/` - Utility functions and helpers
+- `public/` - Static assets
+- `prisma/` - Database schema and migrations
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+To learn more about the technologies used in this project:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://react.dev/)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Prisma](https://www.prisma.io/docs)
+- [MongoDB](https://docs.mongodb.com/)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+The easiest way to deploy this application is using the [Vercel Platform](https://vercel.com/new).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is proprietary and owned by TheNutriDry.
+
