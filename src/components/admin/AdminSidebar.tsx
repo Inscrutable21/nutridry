@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { ShoppingBag, Package } from 'react-feather';
 
 export default function AdminSidebar() {
   const pathname = usePathname();
@@ -14,6 +15,17 @@ export default function AdminSidebar() {
     { name: 'Add New Product', href: '/admin/products/new' },
     { name: 'Bestsellers', href: '/admin/products/bestsellers' },
     { name: 'New Arrivals', href: '/admin/products/new-arrivals' },
+    
+    {
+      name: 'Orders',
+      href: '/admin/orders',
+      icon: ShoppingBag,
+    },
+    {
+      name: 'Stock Management',
+      href: '/admin/stock',
+      icon: Package,
+    },
   ];
 
   return (

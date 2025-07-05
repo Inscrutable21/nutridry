@@ -1,20 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import SearchBar from './SearchBar'
 import { useCart } from '@/context/CartContext'
-// import CartDropdown from '@/components/CartDropdown'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  // const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  // const cartDropdownRef = useRef<HTMLDivElement>(null)
-  const { items, cartCount, cartTotal } = useCart()
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false)
+  const accountDropdownRef = useRef<HTMLDivElement>(null)
+  const { items, cartCount, cartTotal, syncCartWithUser } = useCart()
+  const { admin, user, isAuthenticated, isAdminAuthenticated, logout, isLoading, refreshAuth } = useAuth()
   const router = useRouter()
   
   useEffect(() => {
@@ -26,19 +27,73 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
   
-  // Close cart dropdown when clicking outside
-  // useEffect(() => {
-  //   function handleClickOutside(event: MouseEvent) {
-  //     if (cartDropdownRef.current && !cartDropdownRef.current.contains(event.target as Node)) {
-  //       setCartDropdownOpen(false)
-  //     }
-  //   }
-  //   
-  //   document.addEventListener('mousedown', handleClickOutside)
-  //   return () => {
-  //     document.removeEventListener('mousedown', handleClickOutside)
-  //   }
-  // }, [])
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
+        setAccountDropdownOpen(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  // Add an effect to refresh auth when the component mounts
+  useEffect(() => {
+    // Only refresh auth state when the component mounts
+    refreshAuth();
+    
+    // No interval needed
+  }, [refreshAuth]);
+
+  // Add more detailed logging
+  useEffect(() => {
+    console.log("Navbar Auth State Updated:", { 
+      isAuthenticated, 
+      user: user?.name || 'No user', 
+      isLoading
+    });
+  }, [isAuthenticated, user, isLoading]);
+
+  // Debug logging - remove in production
+  useEffect(() => {
+    console.log("Navbar Auth State:", { 
+      isAuthenticated, 
+      user: user?.name, 
+      isLoading,
+      admin: admin?.name 
+    });
+  }, [isAuthenticated, user, isLoading, admin]);
+
+  // Add this near the top of your Navbar component
+  useEffect(() => {
+    console.log("Navbar User Auth State:", { 
+      isAuthenticated, 
+      user: user?.name, 
+      isLoading
+    });
+  }, [isAuthenticated, user, isLoading]);
+
+  // Add a useEffect to sync cart when authentication state changes
+  useEffect(() => {
+    const syncCart = async () => {
+      if (isAuthenticated && user && !isLoading) {
+        // If we have a syncCartWithUser function in the cart context, call it
+        if (typeof syncCartWithUser === 'function') {
+          try {
+            await syncCartWithUser();
+            console.log('Cart synced after authentication');
+          } catch (error) {
+            console.error('Failed to sync cart:', error);
+          }
+        }
+      }
+    };
+    
+    syncCart();
+  }, [isAuthenticated, user, isLoading, syncCartWithUser]);
 
   // Define styles
   const primaryColor = '#2b9348'
@@ -58,7 +113,53 @@ export default function Navbar() {
     
     const whatsappUrl = `https://wa.me/919984001117?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
-    // setCartDropdownOpen(false);
+  }
+
+  // Handle logout with proper state management
+  const handleLogout = async () => {
+    console.log("Logout clicked");
+    try {
+      await logout();
+      setAccountDropdownOpen(false); // Close dropdown
+      setMobileMenuOpen(false); // Close mobile menu
+      console.log("Logout successful");
+      // Don't manually redirect - let the AuthContext handle it
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <header 
+        className={`fixed w-full z-50 transition-all duration-300 ${
+          isScrolled ? 'bg-white dark:bg-gray-900 shadow-md py-2' : 'bg-white dark:bg-gray-900 py-3'
+        }`} 
+        style={{ fontFamily: 'Poppins, sans-serif' }}
+      >
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex-shrink-0">
+              <div className="relative w-[160px] h-[48px] md:w-[180px] md:h-[54px]">
+                <Image 
+                  src="/logo.svg" 
+                  alt="TheNutriDry" 
+                  fill
+                  style={{ objectFit: 'contain', objectPosition: 'left' }}
+                  className="max-h-full dark:filter dark:brightness-150"
+                  priority
+                />
+              </div>
+            </Link>
+            
+            {/* Loading skeleton for auth button */}
+            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </header>
+    );
   }
 
   return (
@@ -99,16 +200,13 @@ export default function Navbar() {
               <SearchBar primaryColor={primaryColor} />
             </div>
             
-            {/* Mobile Search Icon - Only visible on mobile/tablet */}
+            {/* Mobile Search Icon */}
             <button 
-              className="md:hidden p-2 text-gray-700 flex items-center justify-center" 
+              className="md:hidden p-2 text-gray-700 dark:text-gray-300 flex items-center justify-center" 
               style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
               onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
-              onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
-              onClick={() => {
-                console.log('Search icon clicked');
-                setSearchOpen(prev => !prev);
-              }}
+              onMouseOut={(e) => e.currentTarget.style.color = document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}
+              onClick={() => setSearchOpen(prev => !prev)}
               aria-label="Search"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -118,10 +216,10 @@ export default function Navbar() {
             
             {/* Favorites Icon */}
             <button 
-              className="p-2 text-gray-700 flex items-center justify-center" 
+              className="p-2 text-gray-700 dark:text-gray-300 flex items-center justify-center" 
               style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
               onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
-              onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
+              onMouseOut={(e) => e.currentTarget.style.color = document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}
               aria-label="Favorites"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -129,13 +227,13 @@ export default function Navbar() {
               </svg>
             </button>
             
-            {/* Cart Icon with Dropdown */}
+            {/* Cart Icon */}
             <Link 
               href="/cart" 
-              className="p-2 text-gray-700 relative flex items-center justify-center" 
+              className="p-2 text-gray-700 dark:text-gray-300 relative flex items-center justify-center" 
               style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
               onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
-              onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
+              onMouseOut={(e) => e.currentTarget.style.color = document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}
               aria-label="Shopping Cart"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -151,23 +249,126 @@ export default function Navbar() {
               )}
             </Link>
             
-            <button 
-              className="p-2 text-gray-700 flex items-center justify-center"
-              style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
-              onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
-              onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
-              aria-label="Account"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-              </svg>
-            </button>
+            {/* Account Icon - Fixed Logic */}
+            <div className="relative" ref={accountDropdownRef}>
+              {isAuthenticated || isAdminAuthenticated ? (
+                // LOGGED IN STATE - Show user info and logout
+                <>
+                  <button 
+                    onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                    className="p-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors flex items-center"
+                    aria-label="Account Menu"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                    {/* Show user name on desktop */}
+                    <span className="ml-2 text-sm hidden md:inline">
+                      {user?.name || admin?.name || 'Account'}
+                    </span>
+                  </button>
+                  
+                  {accountDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                      <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200 dark:text-gray-200 dark:border-gray-700">
+                        <p className="font-medium">Hello, {user?.name || admin?.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {user?.email || admin?.email}
+                        </p>
+                        {user && !user.isVerified && (
+                          <p className="text-xs text-orange-500 mt-1">Email not verified</p>
+                        )}
+                      </div>
+                      
+                      {user && (
+                        <>
+                          <Link 
+                            href="/profile" 
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                            onClick={() => setAccountDropdownOpen(false)}
+                          >
+                            My Profile
+                          </Link>
+                          <Link 
+                            href="/account/orders" 
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                            onClick={() => setAccountDropdownOpen(false)}
+                          >
+                            My Orders
+                          </Link>
+                          <Link 
+                            href="/wishlist" 
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                            onClick={() => setAccountDropdownOpen(false)}
+                          >
+                            Wishlist
+                          </Link>
+                        </>
+                      )}
+                      
+                      {admin && (
+                        <Link 
+                          href="/admin/dashboard" 
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                          onClick={() => setAccountDropdownOpen(false)}
+                        >
+                          Admin Dashboard
+                        </Link>
+                      )}
+                                            <button 
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 border-t border-gray-200 dark:border-gray-700"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                // NOT LOGGED IN STATE - Show login dropdown
+                <>
+                  <button 
+                    onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                    className="p-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                    aria-label="Account"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                  </button>
+                  
+                  {accountDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                      <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200 dark:text-gray-200 dark:border-gray-700">
+                        <p className="font-medium">Welcome!</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Please login to continue</p>
+                      </div>
+                      <Link 
+                        href="/login" 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                        onClick={() => setAccountDropdownOpen(false)}
+                      >
+                        Login
+                      </Link>
+                      <Link 
+                        href="/signup" 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                        onClick={() => setAccountDropdownOpen(false)}
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
             
+            {/* Mobile Menu Button */}
             <button 
-              className="md:hidden p-2 text-gray-700 flex items-center justify-center"
+              className="md:hidden p-2 text-gray-700 dark:text-gray-300 flex items-center justify-center"
               style={{ transition: 'color 0.2s', width: '40px', height: '40px' }}
               onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
-              onMouseOut={(e) => e.currentTarget.style.color = '#374151'}
+              onMouseOut={(e) => e.currentTarget.style.color = document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Menu"
             >
@@ -187,7 +388,7 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div 
-            className="md:hidden pt-4 pb-3 border-t mt-3"
+            className="md:hidden pt-4 pb-3 border-t mt-3 dark:border-gray-700"
             style={{
               animation: 'fadeIn 0.3s ease-out forwards',
             }}
@@ -210,11 +411,63 @@ export default function Navbar() {
                   )}
                 </div>
               </MobileNavLink>
+              
+              {/* Mobile Account Section */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                {isAuthenticated || isAdminAuthenticated ? (
+                  <>
+                    <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">
+                      <p className="font-medium">Hello, {user?.name || admin?.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {user?.email || admin?.email}
+                      </p>
+                      {user && !user.isVerified && (
+                        <p className="text-xs text-orange-500 mt-1">Email not verified</p>
+                      )}
+                    </div>
+                    
+                    {user && (
+                      <>
+                        <MobileNavLink href="/profile" onClick={() => setMobileMenuOpen(false)} primaryColor={primaryColor}>
+                          My Profile
+                        </MobileNavLink>
+                        <MobileNavLink href="/account/orders" onClick={() => setMobileMenuOpen(false)} primaryColor={primaryColor}>
+                          My Orders
+                        </MobileNavLink>
+                        <MobileNavLink href="/wishlist" onClick={() => setMobileMenuOpen(false)} primaryColor={primaryColor}>
+                          Wishlist
+                        </MobileNavLink>
+                      </>
+                    )}
+                    
+                    {admin && (
+                      <MobileNavLink href="/admin/dashboard" onClick={() => setMobileMenuOpen(false)} primaryColor={primaryColor}>
+                        Admin Dashboard
+                      </MobileNavLink>
+                    )}
+                    
+                    <button 
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-red-600"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 mb-2">
+                      <p className="font-medium">Account</p>
+                    </div>
+                    <MobileNavLink href="/login" onClick={() => setMobileMenuOpen(false)} primaryColor={primaryColor}>Login</MobileNavLink>
+                    <MobileNavLink href="/signup" onClick={() => setMobileMenuOpen(false)} primaryColor={primaryColor}>Sign Up</MobileNavLink>
+                  </>
+                )}
+              </div>
             </nav>
           </div>
         )}
 
-        {/* Mobile Search Bar - Appears below navbar */}
+        {/* Mobile Search Bar */}
         {searchOpen && (
           <div 
             className="md:hidden w-full py-3 px-2 border-t mt-2 animate-fadeIn dark:border-gray-700"
@@ -222,9 +475,7 @@ export default function Navbar() {
             <SearchBar 
               primaryColor={primaryColor} 
               onSearch={(query: string) => {
-                // Handle search
                 router.push(`/products?search=${encodeURIComponent(query)}`);
-                // Close search bar after search
                 setSearchOpen(false);
               }} 
             />
@@ -257,10 +508,11 @@ function NavLink({ href, children, primaryColor }: { href: string, children: Rea
         transition: 'color 0.2s'
       }}
       onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
-      onMouseOut={(e) => e.currentTarget.style.color = '#1f2937'}
-      onMouseOutCapture={(e) => {
+      onMouseOut={(e) => {
         if (document.documentElement.classList.contains('dark')) {
           e.currentTarget.style.color = '#e5e7eb';
+        } else {
+          e.currentTarget.style.color = '#1f2937';
         }
       }}
     >
@@ -280,13 +532,19 @@ function MobileNavLink({ href, children, onClick, primaryColor }: { href: string
   return (
     <Link 
       href={href} 
-      className="text-gray-800 block py-2 font-medium"
+      className="text-gray-800 dark:text-gray-200 block py-2 font-medium"
       style={{ 
         fontFamily: 'Poppins, sans-serif',
         transition: 'color 0.2s'
       }}
       onMouseOver={(e) => e.currentTarget.style.color = primaryColor}
-      onMouseOut={(e) => e.currentTarget.style.color = '#1f2937'}
+      onMouseOut={(e) => {
+        if (document.documentElement.classList.contains('dark')) {
+          e.currentTarget.style.color = '#e5e7eb';
+        } else {
+          e.currentTarget.style.color = '#1f2937';
+        }
+      }}
       onClick={onClick}
     >
       {children}

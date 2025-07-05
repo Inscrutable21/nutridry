@@ -33,6 +33,12 @@ model Product {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   variants         SizeVariant[]
+
+  // --- FIX: ADD THESE TWO LINES ---
+  // This index is crucial for fixing the "Sort exceeded memory limit" error.
+  @@index([name])
+  // This index is a best practice to speed up filtering by category.
+  @@index([category])
 }
 
 model SizeVariant {
@@ -49,17 +55,80 @@ model SizeVariant {
   @@index([productId])
 }
 
+model User {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String    @unique
+  password    String
+  mobile      String?
+  isVerified  Boolean   @default(false)
+  otp         String?
+  otpExpiry   DateTime?
+  addresses   Address[]
+  orders      Order[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
 model Admin {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(cuid()) @map("_id")
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+model Address {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  email          String
+  phone          String
+  address        String
+  pincode        String
+  locality       String
+  city           String
+  state          String
+  landmark       String?
+  alternatePhone String?
+  isDefault      Boolean  @default(false)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String   @db.ObjectId
+  orders         Order[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
+  @@index([userId])
+}
 
+// Add PaymentOption model to store available payment methods
+model PaymentOption {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   // "Cash on Delivery"
+  code        String   @unique // "cod"
+  description String?
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
 
-
-
-
+// Order model
+model Order {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  items       Json     // Stores the array of items as JSON
+  addressId   String   @db.ObjectId
+  paymentMethod String
+  subtotal    Float
+  shippingCost Float
+  total       Float
+  status      String   // pending, processing, shipped, delivered, cancelled
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address     Address  @relation(fields: [addressId], references: [id])
+  
+  @@index([userId])
+  @@index([addressId])
+}

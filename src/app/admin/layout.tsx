@@ -10,8 +10,6 @@ import '../globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// Metadata is now in a separate file
-
 export default function AdminLayout({
   children,
 }: {

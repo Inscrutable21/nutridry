@@ -29,16 +29,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Check if the current path is an admin route
+  const isAdminRoute = typeof window !== 'undefined' ? 
+    window.location.pathname.startsWith('/admin') : false;
+
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className={`${inter.variable} ${playfair.variable} font-sans antialiased`}>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <body className={`${inter.variable} ${playfair.variable} font-sans antialiased`} suppressHydrationWarning>
         <AuthProvider>
           <CartProvider>
             <Preloader />
-            <Navbar />
+            {!isAdminRoute && <Navbar />}
             <main>{children}</main>
-            <Footer />
-            <RecentPurchaseNotification />
+            {!isAdminRoute && <Footer />}
+            {!isAdminRoute && <RecentPurchaseNotification />}
             <Toaster position="bottom-right" />
           </CartProvider>
         </AuthProvider>

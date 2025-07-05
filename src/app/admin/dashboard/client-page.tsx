@@ -74,9 +74,13 @@ export default function ClientDashboard() {
     
     fetchDashboardData();
     
+    // Cleanup function
     return () => {
       clearTimeout(timeoutId);
-      controller.abort();
+      // Only abort if the controller is not already aborted
+      if (!controller.signal.aborted) {
+        controller.abort();
+      }
     };
   }, [router]);
 
@@ -131,24 +135,6 @@ export default function ClientDashboard() {
             </div>
           </div>
         )}
-        
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link
-              href="/admin/products/new"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-lg text-center transition-colors"
-            >
-              Add New Product
-            </Link>
-            <Link
-              href="/admin/products"
-              className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg text-center transition-colors"
-            >
-              Manage Products
-            </Link>
-          </div>
-        </div>
       </main>
     </div>
   );

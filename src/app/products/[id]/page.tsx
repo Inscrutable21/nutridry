@@ -57,14 +57,42 @@ type CartItem = {
   variant: string | null; // Changed from variant?: string | null
 }
 
+// Add this function near the top with other utility functions
+const getDeliveryDate = (): string => {
+  const today = new Date();
+  const deliveryDate = new Date(today);
+  deliveryDate.setDate(today.getDate() + 7); // 1 week from today
+  
+  return deliveryDate.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+};
+
 // Product Images component with slider functionality
 const ProductImageGallery = ({ product }: { product: Product }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState<boolean[]>([]);
   const images = [
     product.image,
     ...(product.secondaryImage ? [product.secondaryImage] : []),
     ...(product.images || [])
   ].filter(Boolean);
+
+  // Initialize image loading state
+  useEffect(() => {
+    setImagesLoaded(new Array(images.length).fill(false));
+  }, [images.length]);
+
+  // Handle image load
+  const handleImageLoad = (index: number) => {
+    setImagesLoaded(prev => {
+      const newState = [...prev];
+      newState[index] = true;
+      return newState;
+    });
+  };
 
   const nextImage = () => {
     setCurrentImageIndex((prev: number) => (prev + 1) % images.length);
@@ -91,6 +119,13 @@ const ProductImageGallery = ({ product }: { product: Product }) => {
             transition={{ duration: 0.3 }}
             className="relative aspect-square"
           >
+            {/* Show placeholder while image loads */}
+            {!imagesLoaded[currentImageIndex] && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+            
             {images.length > 0 ? (
               <Image 
                 src={images[currentImageIndex]}
@@ -98,6 +133,9 @@ const ProductImageGallery = ({ product }: { product: Product }) => {
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                onLoad={() => handleImageLoad(currentImageIndex)}
+                loading="lazy"
+                priority={false}
                 onError={(e) => {
                   console.error('Image failed to load:', images[currentImageIndex]);
                   e.currentTarget.style.display = 'none';
@@ -135,7 +173,7 @@ const ProductImageGallery = ({ product }: { product: Product }) => {
         )}
       </div>
 
-      {/* Thumbnail Navigation */}
+      {/* Thumbnail Navigation with lazy loading */}
       {images.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {images.map((img, index) => (
@@ -152,6 +190,8 @@ const ProductImageGallery = ({ product }: { product: Product }) => {
                 alt={`${product.name} thumbnail ${index + 1}`}
                 fill
                 className="object-cover"
+                loading="lazy"
+                priority={false}
               />
             </button>
           ))}
@@ -170,6 +210,7 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null)
+  const [productLoaded, setProductLoaded] = useState(false)
   
   useEffect(() => {
     const fetchProduct = async () => {
@@ -181,6 +222,7 @@ export default function ProductPage() {
         }
         const data = await response.json();
         setProduct(data);
+        setProductLoaded(true);
       } catch (err) {
         console.error('Error fetching product:', err);
         setError('Failed to load product. Please try again.');
@@ -194,12 +236,23 @@ export default function ProductPage() {
     }
   }, [id]);
   
-  if (isLoading) {
+  // Show a minimal loading state while waiting for product data
+  if (isLoading && !productLoaded) {
     return (
-      <div className="pt-24 pb-16 flex justify-center items-center min-h-screen">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading product...</p>
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row gap-8">
+            <div className="md:w-1/2 bg-gray-100 rounded-lg aspect-square animate-pulse"></div>
+            <div className="md:w-1/2">
+              <div className="h-8 bg-gray-200 rounded w-3/4 mb-4 animate-pulse"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/2 mb-8 animate-pulse"></div>
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -409,6 +462,13 @@ export default function ProductPage() {
               ) : (
                 <span className="text-amber-600 dark:text-amber-500">₹{product.price.toFixed(2)}</span>
               )}
+            </div>
+
+            <div className="mb-4 text-gray-700 dark:text-gray-300 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-emerald-600">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+              </svg>
+              <span>Estimated Delivery: <strong>{getDeliveryDate()}</strong></span>
             </div>
 
             <p className="text-gray-700 dark:text-gray-300 mb-6">{product.description}</p>
