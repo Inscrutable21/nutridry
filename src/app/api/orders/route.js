@@ -27,6 +27,14 @@ export async function POST(request) {
       itemsLength: items?.length,
       shippingCost 
     });
+    
+    // Debug log to see what image URLs are coming in
+    console.log('Item images:', items.map(item => ({ 
+      name: item.name, 
+      image: item.image,
+      productId: item.productId,
+      variantId: item.variantId
+    })));
 
     // --- Input Validation ---
     if (!userId || !addressId || !paymentMethod) {
@@ -37,15 +45,38 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Items array is required and cannot be empty.' }, { status: 400 });
     }
 
-    // --- Data Integrity Check and Calculation ---
-    let subtotal = 0;
-    for (const item of items) {
-      // THIS IS THE CRITICAL CHECK. Ensure the data from your frontend is correct.
-      if (!item.productId || !item.quantity || !item.price) {
-        return NextResponse.json({ error: `Invalid item in cart. Each item must have a productId, quantity, and price. Problem item: ${JSON.stringify(item)}` }, { status: 400 });
+    // Ensure all items have proper image URLs
+    const processedItems = items.map(item => {
+      // Make a copy to avoid mutating the original
+      const processedItem = { ...item };
+      
+      // Ensure image URLs are properly formatted with absolute paths
+      if (processedItem.image) {
+        // Skip data URLs (they're already complete)
+        if (processedItem.image.startsWith('data:')) {
+          // Keep data URLs as they are
+        }
+        // If image is a relative path, make it absolute
+        else if (!processedItem.image.startsWith('http') && !processedItem.image.startsWith('/')) {
+          processedItem.image = '/' + processedItem.image;
+        }
+        
+        // Fix common image path issues
+        if (processedItem.image.startsWith('/products/') && !processedItem.image.startsWith('/images/products/')) {
+          processedItem.image = '/images' + processedItem.image;
+        }
+      } else {
+        // If no image, use placeholder
+        processedItem.image = '/placeholder.jpg';
       }
-      subtotal += item.price * item.quantity;
-    }
+      
+      return processedItem;
+    });
+
+    // Calculate subtotal
+    const subtotal = processedItems.reduce((total, item) => {
+      return total + (item.price * item.quantity);
+    }, 0);
 
     const total = subtotal + (shippingCost || 0);
 
@@ -55,9 +86,8 @@ export async function POST(request) {
         userId,
         addressId,
         paymentMethod,
-        // The 'items' array, complete with variantId, is saved as JSON.
-        // This is the root cause fix.
-        items: items,
+        // Save the processed items with fixed image URLs
+        items: processedItems,
         subtotal,
         shippingCost: shippingCost || 0,
         total,
@@ -66,6 +96,7 @@ export async function POST(request) {
     });
 
     console.log(`New order created with ID: ${newOrder.id}`);
+    console.log('Saved order items:', newOrder.items);
 
     return NextResponse.json(newOrder, { status: 201 });
 
@@ -95,9 +126,57 @@ export async function GET(request) {
                 }
             }
         });
-        return NextResponse.json(orders);
+        
+        // Process orders to ensure all have properly formatted items with images
+        const processedOrders = orders.map(order => {
+          // Parse items if they're stored as a string
+          let items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+          
+          // Ensure all items have proper image URLs
+          items = items.map(item => {
+            // Make a copy to avoid mutating the original
+            const processedItem = { ...item };
+            
+            // Ensure image URLs are properly formatted with absolute paths
+            if (processedItem.image) {
+              // Skip data URLs (they're already complete)
+              if (processedItem.image.startsWith('data:')) {
+                // Keep data URLs as they are
+              }
+              // If image is a relative path, make it absolute
+              else if (!processedItem.image.startsWith('http') && !processedItem.image.startsWith('/')) {
+                processedItem.image = '/' + processedItem.image;
+              }
+              
+              // Fix common image path issues
+              if (processedItem.image.startsWith('/products/') && !processedItem.image.startsWith('/images/products/')) {
+                processedItem.image = '/images' + processedItem.image;
+              }
+            } else {
+              // If no image, use placeholder
+              processedItem.image = '/placeholder.jpg';
+            }
+            
+            return processedItem;
+          });
+          
+          return {
+            ...order,
+            items
+          };
+        });
+
+        return NextResponse.json({ orders: processedOrders });
     } catch (error) {
         console.error("Error fetching orders:", error);
         return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
     }
 }
+
+
+
+
+
+
+
+

@@ -15,7 +15,8 @@ export default function customImageLoader({ src, width, quality }: {
   if (src.startsWith('/')) {
     // For placeholder images, use a static path instead of the image optimization API
     if (src.includes('placeholder')) {
-      return `${baseUrl}${src}`;
+      // Update this to use the correct path to your placeholder image
+      return `${baseUrl}/placeholder.jpg`; // Changed from /images/placeholder.png to /placeholder.jpg
     }
     
     // For product images, use a CDN or image optimization service if available
@@ -27,6 +28,6 @@ export default function customImageLoader({ src, width, quality }: {
     return `${baseUrl}/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${quality || 75}`;
   }
   
-  // If we get here, just return the src as-is
+  // If it's not an absolute URL or a local image, return as is
   return src;
 }

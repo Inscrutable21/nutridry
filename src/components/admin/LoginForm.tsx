@@ -62,7 +62,12 @@ export default function LoginForm() {
 
       if (response.ok && data.success) {
         toast.success('Login successful');
-        router.push('/admin/dashboard');
+        
+        // Add a slight delay before refreshing to ensure cookies are set
+        setTimeout(() => {
+          // Force a full page refresh to ensure all auth state is updated
+          window.location.href = '/admin/dashboard';
+        }, 500);
       } else {
         setError(data.message || 'Login failed');
         toast.error(data.message || 'Login failed');

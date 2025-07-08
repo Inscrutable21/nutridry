@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast'
 import { useAuth } from '@/context/AuthContext'
 
 type OrderItem = {
-  id: string;
+  id?: string;  // Make id optional since some items might not have it
   name: string;
   price: number;
   quantity: number;
@@ -162,16 +162,11 @@ export default function MyOrdersPage() {
                   <div>
                     <h4 className="font-medium mb-2">Items</h4>
                     <div className="space-y-2">
-                      {order.items.slice(0, 2).map((item) => (
-                        <div key={item.id} className="flex items-center gap-3">
-                          <div className="w-12 h-12 relative flex-shrink-0">
-                            <Image
-                              src={item.image || '/images/placeholder.png'}
-                              alt={item.name}
-                              fill
-                              className="object-cover rounded"
-                            />
-                          </div>
+                      {order.items.slice(0, 2).map((item, index) => (
+                        <div 
+                          key={`order-item-${order.id}-${index}-${item.id || item.name}`} 
+                          className="flex items-center gap-3"
+                        >
                           <div>
                             <p className="text-sm font-medium">{item.name}</p>
                             <p className="text-xs text-gray-500">
@@ -216,3 +211,6 @@ export default function MyOrdersPage() {
     </div>
   );
 }
+
+
+

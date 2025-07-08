@@ -160,6 +160,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await refreshAuth();
         }
         
+        // Add a slight delay before refreshing to ensure cookies are set
+        setTimeout(() => {
+          // Force a full page refresh to ensure all auth state is updated
+          window.location.href = data.redirectUrl || '/';
+        }, 500);
+        
         return { 
           success: true, 
           message: data.message || 'Login successful', 
@@ -175,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Login error:', error);
       return { 
         success: false, 
-        message: error instanceof Error ? error.message : 'An error occurred during login' 
+        message: error instanceof Error ? error.message : 'An unexpected error occurred' 
       };
     } finally {
       setIsLoading(false);

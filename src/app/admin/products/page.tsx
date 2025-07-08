@@ -25,8 +25,10 @@ export default function ProductsPage() {
         signal: AbortSignal.timeout(30000)
       });
       
+      // Parse the response data first
       const data = await response.json();
       
+      // Then check if the response was ok
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch products');
       }

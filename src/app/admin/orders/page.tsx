@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -14,6 +13,11 @@ interface Order {
     name: string;
     email: string;
   };
+  items: {
+    name: string;
+    image: string;
+    // other item properties
+  }[];
 }
 
 export default function AdminOrdersPage() {
@@ -37,7 +41,7 @@ export default function AdminOrdersPage() {
         }
         
         const data = await response.json();
-        setOrders(data); // The response from your API is the full array of orders
+        setOrders(data.orders || []); // Ensure we always set an array
         
       } catch (err) {
         const message = err instanceof Error ? err.message : 'An unknown error occurred';
@@ -76,6 +80,7 @@ export default function AdminOrdersPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -88,6 +93,15 @@ export default function AdminOrdersPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">{order.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {format(new Date(order.createdAt), 'dd MMM yyyy, h:mm a')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <span className="text-sm text-gray-900">
+                        {order.items && Array.isArray(order.items) && order.items.length > 0 
+                          ? `${order.items.length} item${order.items.length > 1 ? 's' : ''}`
+                          : 'No items'}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.user?.name || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{order.total.toFixed(2)}</td>
@@ -114,3 +128,8 @@ export default function AdminOrdersPage() {
     </div>
   );
 }
+
+
+
+
+

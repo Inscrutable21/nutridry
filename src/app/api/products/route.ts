@@ -74,7 +74,36 @@ export async function GET(request: Request) {
     try {
       // Execute optimized query with Promise.all for parallel execution
       const results = await Promise.all([
-        prisma.product.findMany({
+        prisma.$queryRaw`
+          db.Product.aggregate([
+            ${whereClause ? { $match: whereClause } : {}},
+            { $sort: { createdAt: -1 } },
+            { $skip: ${skip} },
+            { $limit: ${limit} },
+            {
+              $lookup: {
+                from: "SizeVariant",
+                localField: "id",
+                foreignField: "productId",
+                as: "variants",
+                pipeline: [{ $limit: 1 }]
+              }
+            }
+          ], { allowDiskUse: true })
+        `,
+        prisma.product.count({ where: whereClause })
+      ]);
+      
+      products = results[0];
+      total = results[1];
+    } catch (dbError) {
+      console.error(`Database query failed:`, dbError);
+      
+      // Fallback approach with index
+      try {
+        console.log("Trying fallback approach with index...");
+        // Use the name index we added to the schema
+        products = await prisma.product.findMany({
           where: whereClause,
           select: {
             id: true,
@@ -86,7 +115,6 @@ export async function GET(request: Request) {
             featured: true,
             rating: true,
             reviews: true,
-            // Only fetch first variant for performance
             variants: {
               select: {
                 id: true,
@@ -99,16 +127,14 @@ export async function GET(request: Request) {
           },
           skip,
           take: limit,
-          orderBy: { createdAt: 'desc' },
-        }),
-        prisma.product.count({ where: whereClause })
-      ]);
-      
-      products = results[0];
-      total = results[1];
-    } catch (dbError) {
-      console.error(`Database query failed:`, dbError);
-      throw dbError;
+          orderBy: { name: 'asc' }, // Use the indexed field instead
+        });
+        
+        total = await prisma.product.count({ where: whereClause });
+      } catch (fallbackError) {
+        console.error("Fallback approach failed:", fallbackError);
+        throw fallbackError;
+      }
     }
     
     // Transform the data - simplified for performance

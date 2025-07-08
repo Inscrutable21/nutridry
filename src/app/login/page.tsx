@@ -47,9 +47,13 @@ export default function LoginPage() {
         console.error('Failed to clear localStorage:', err)
       }
       
-      // Redirect immediately without setTimeout to prevent multiple syncs
-      router.push(data.redirectUrl || '/')
       toast.success('Login successful')
+      
+      // Add a slight delay before refreshing to ensure cookies are set
+      setTimeout(() => {
+        // Force a full page refresh to ensure all auth state is updated
+        window.location.href = data.redirectUrl || '/'
+      }, 500)
     } catch (error) {
       console.error('Login error:', error)
       setError((error as Error).message)
@@ -246,6 +250,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 
 

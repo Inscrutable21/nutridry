@@ -60,15 +60,30 @@ export default function CheckoutPage() {
       // Log the items being sent to the API
       console.log('Sending items to API:', items);
       
-      // Make sure each item has the required fields
-      const validatedItems = items.map(item => ({
-        productId: item.id,
-        variantId: item.variant || null,
-        quantity: item.quantity,
-        price: item.price,
-        name: item.name
-      }));
-      
+      // When preparing the order items, ensure images have absolute URLs
+      const validatedItems = items.map(item => {
+        // Create a copy to avoid mutating the original
+        const validatedItem = { ...item };
+        
+        // Ensure image URLs are absolute
+        if (validatedItem.image) {
+          // If image doesn't start with http or /, add /
+          if (!validatedItem.image.startsWith('http') && !validatedItem.image.startsWith('/')) {
+            validatedItem.image = '/' + validatedItem.image;
+          }
+          
+          // Fix common image path issues
+          if (validatedItem.image.startsWith('/products/') && !validatedItem.image.startsWith('/images/products/')) {
+            validatedItem.image = '/images' + validatedItem.image;
+          }
+        } else {
+          // If no image, use placeholder
+          validatedItem.image = '/placeholder.jpg';
+        }
+        
+        return validatedItem;
+      });
+
       // Ensure all required fields are present and log them for debugging
       if (!user?.id) {
         console.error('Missing user ID');
@@ -93,7 +108,7 @@ export default function CheckoutPage() {
       // Log the request payload for debugging
       const orderPayload = {
         userId: user.id,
-        items: validatedItems,
+        items: validatedItems, // Use the validated items with proper image URLs
         addressId: selectedAddress.id,
         paymentMethod,
         subtotal: cartTotal,
@@ -273,11 +288,5 @@ export default function CheckoutPage() {
     </div>
   )
 }
-
-
-
-
-
-
 
 

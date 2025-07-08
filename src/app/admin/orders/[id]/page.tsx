@@ -8,7 +8,9 @@ import { use } from 'react'
 import Link from 'next/link'
 
 type OrderItem = {
-  id: string;
+  id?: string;  // Make id optional since some items might not have it
+  productId?: string;
+  variantId?: string;
   name: string;
   price: number;
   quantity: number;
@@ -272,23 +274,19 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h3 className="font-semibold mb-4">Order Items</h3>
         <div className="divide-y divide-gray-200">
-          {order.items.map((item: OrderItem) => (
-            <div key={item.id} className="py-4 flex items-center">
-              <div className="w-16 h-16 relative flex-shrink-0">
-                <Image
-                  src={item.image || '/images/placeholder.png'}
-                  alt={item.name}
-                  fill
-                  className="object-cover rounded"
-                />
-              </div>
-              <div className="ml-4 flex-grow">
-                <h4 className="font-medium">{item.name}</h4>
-                {item.variant && <p className="text-sm text-gray-500">Variant: {item.variant}</p>}
-                <p className="text-sm text-gray-500">Qty: {item.quantity} × ₹{item.price.toFixed(2)}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
+          {order.items.map((item: OrderItem, index: number) => (
+            <div 
+              key={`order-item-${index}-${item.productId || item.variantId || item.name}`} 
+              className="py-4 flex items-center"
+            >
+              <div className="ml-4 flex-1">
+                <p className="font-medium">{item.name}</p>
+                <p className="text-sm text-gray-500">
+                  {item.variant && `Variant: ${item.variant}`}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {item.quantity} × ₹{item.price.toFixed(2)} = ₹{(item.quantity * item.price).toFixed(2)}
+                </p>
               </div>
             </div>
           ))}
@@ -317,5 +315,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     </div>
   );
 }
+
 
 

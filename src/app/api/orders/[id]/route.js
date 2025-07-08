@@ -37,9 +37,39 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    if (typeof order.items === 'string') {
-      order.items = JSON.parse(order.items);
-    }
+    // Parse items if they're stored as a string
+    let items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+    
+    // Ensure image URLs are absolute
+    items = items.map(item => {
+      // Make a copy to avoid mutating the original
+      const processedItem = { ...item };
+      
+      // Ensure image URLs are properly formatted with absolute paths
+      if (processedItem.image) {
+        // Skip data URLs (they're already complete)
+        if (processedItem.image.startsWith('data:')) {
+          // Keep data URLs as they are
+        }
+        // If image is a relative path, make it absolute
+        else if (!processedItem.image.startsWith('http') && !processedItem.image.startsWith('/')) {
+          processedItem.image = '/' + processedItem.image;
+        }
+        
+        // Fix common image path issues
+        if (processedItem.image.startsWith('/products/') && !processedItem.image.startsWith('/images/products/')) {
+          processedItem.image = '/images' + processedItem.image;
+        }
+      } else {
+        // If no image, use placeholder
+        processedItem.image = '/images/placeholder.jpg';
+      }
+      
+      return processedItem;
+    });
+    
+    order.items = items;
+    
     return NextResponse.json({ order });
 
   } catch (error) {
@@ -149,6 +179,11 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 });
   }
 }
+
+
+
+
+
 
 
 
