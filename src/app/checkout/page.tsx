@@ -45,54 +45,77 @@ export default function CheckoutPage() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!selectedAddress) {
-      toast.error('Please select or add a shipping address');
-      return;
-    }
-    
     setIsSubmitting(true);
     
     try {
-      // Create order message including payment method
-      let message = "Hello! I would like to order the following items:\n\n";
-
-      items.forEach(item => {
-        message += `*${item.name}* - Quantity: ${item.quantity} - Price: ₹${(item.price * item.quantity).toFixed(2)}\n`;
-      });
-
-      message += `\n*Subtotal: ₹${cartTotal.toFixed(2)}*`;
-      message += `\n*Shipping: ${shippingCost === 0 ? 'Free' : '₹' + shippingCost.toFixed(2)}*`;
-      message += `\n*Total: ₹${orderTotal.toFixed(2)}*\n\n`;
-      message += `Payment Method: Cash on Delivery\n\n`;
-      message += `Delivery Address:\n${selectedAddress.name}\n${selectedAddress.phone}\n${selectedAddress.address}, ${selectedAddress.locality}\n${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}`;
-
-      if (selectedAddress.landmark) {
-        message += `\nLandmark: ${selectedAddress.landmark}`;
-      }
-
-      if (selectedAddress.alternatePhone) {
-        message += `\nAlternate Phone: ${selectedAddress.alternatePhone}`;
+      // Check if cart is empty and log the items
+      console.log('Cart items:', items);
+      
+      if (!items || items.length === 0) {
+        toast.error('Your cart is empty. Please add items before checkout.');
+        setIsSubmitting(false);
+        return;
       }
       
-      // Save order to database
+      // Log the items being sent to the API
+      console.log('Sending items to API:', items);
+      
+      // Make sure each item has the required fields
+      const validatedItems = items.map(item => ({
+        productId: item.id,
+        variantId: item.variant || null,
+        quantity: item.quantity,
+        price: item.price,
+        name: item.name
+      }));
+      
+      // Ensure all required fields are present and log them for debugging
+      if (!user?.id) {
+        console.error('Missing user ID');
+        throw new Error('Missing user ID');
+      }
+      
+      if (!selectedAddress?.id) {
+        console.error('Missing address ID');
+        throw new Error('Missing address ID');
+      }
+      
+      if (!paymentMethod) {
+        console.error('Missing payment method');
+        throw new Error('Missing payment method');
+      }
+      
+      if (!items || items.length === 0) {
+        console.error('Empty items array');
+        throw new Error('Empty items array');
+      }
+      
+      // Log the request payload for debugging
+      const orderPayload = {
+        userId: user.id,
+        items: validatedItems,
+        addressId: selectedAddress.id,
+        paymentMethod,
+        subtotal: cartTotal,
+        shippingCost,
+        total: orderTotal,
+      };
+      
+      console.log('Sending order payload:', orderPayload);
+      
+      // Use the validated items for the API request
       const orderResponse = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          items,
-          addressId: selectedAddress.id,
-          paymentMethod,
-          subtotal: cartTotal,
-          shippingCost,
-          total: orderTotal,
-        }),
+        body: JSON.stringify(orderPayload),
       });
       
       if (!orderResponse.ok) {
-        throw new Error('Failed to save order');
+        const errorData = await orderResponse.json();
+        console.error('Order API error:', errorData);
+        throw new Error(`Failed to save order: ${errorData.error || 'Unknown error'}`);
       }
       
       // Clear cart after successful order
@@ -250,3 +273,11 @@ export default function CheckoutPage() {
     </div>
   )
 }
+
+
+
+
+
+
+
+

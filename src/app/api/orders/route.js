@@ -20,17 +20,29 @@ export async function POST(request) {
     const body = await request.json();
     const { userId, addressId, paymentMethod, items, shippingCost } = body;
 
+    console.log('Received order request:', { 
+      userId, 
+      addressId, 
+      paymentMethod, 
+      itemsLength: items?.length,
+      shippingCost 
+    });
+
     // --- Input Validation ---
-    if (!userId || !addressId || !paymentMethod || !items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: 'Missing required fields: userId, addressId, paymentMethod, and non-empty items array are required.' }, { status: 400 });
+    if (!userId || !addressId || !paymentMethod) {
+      return NextResponse.json({ error: 'Missing required fields: userId, addressId, and paymentMethod are required.' }, { status: 400 });
+    }
+    
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: 'Items array is required and cannot be empty.' }, { status: 400 });
     }
 
     // --- Data Integrity Check and Calculation ---
     let subtotal = 0;
     for (const item of items) {
       // THIS IS THE CRITICAL CHECK. Ensure the data from your frontend is correct.
-      if (!item.variantId || !item.productId || !item.quantity || !item.price) {
-        return NextResponse.json({ error: `Invalid item in cart. Each item must have a productId, variantId, quantity, and price. Problem item: ${JSON.stringify(item)}` }, { status: 400 });
+      if (!item.productId || !item.quantity || !item.price) {
+        return NextResponse.json({ error: `Invalid item in cart. Each item must have a productId, quantity, and price. Problem item: ${JSON.stringify(item)}` }, { status: 400 });
       }
       subtotal += item.price * item.quantity;
     }
