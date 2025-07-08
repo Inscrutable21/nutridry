@@ -133,25 +133,40 @@ export default function ProductList({ products, showActions = true, onRefresh, o
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="flex justify-between items-center">
               <div>
-                <span className="text-xs text-gray-300">Price:</span>
-                <p className="font-medium text-white">₹{product.price.toFixed(2)}</p>
+                <div className="text-sm">
+                  ₹{product.price.toFixed(2)}
+                </div>
+                {product.salePrice && (
+                  <div className="text-xs text-red-400">
+                    Sale: ₹{product.salePrice.toFixed(2)}
+                  </div>
+                )}
               </div>
               <div>
-                <span className="text-xs text-gray-300">Stock:</span>
-                <p className={`font-medium ${
-                  product.stock > 10
-                    ? 'text-green-400'
-                    : product.stock > 0
-                    ? 'text-amber-400'
-                    : 'text-red-400'
-                }`}>{product.stock}</p>
+                <span
+                  className={`text-sm font-medium ${
+                    product.stock > 10
+                      ? 'text-green-400'
+                      : product.stock > 0
+                      ? 'text-amber-400'
+                      : 'text-red-400'
+                  }`}
+                >
+                  {product.stock}
+                </span>
               </div>
             </div>
             
             {showActions && (
               <div className="flex flex-wrap gap-2 mt-3">
+                <Link 
+                  href={`/admin/products/${product.id}`}
+                  className="px-2 py-1 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Edit
+                </Link>
                 <button
                   onClick={() => toggleBestseller(product.id, product.bestseller)}
                   className={`px-2 py-1 text-xs rounded-md ${
@@ -175,7 +190,9 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                 <button
                   onClick={() => handleDelete(product.id)}
                   disabled={isDeleting === product.id}
-                  className="px-2 py-1 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
+                  className={`px-2 py-1 text-xs rounded-md bg-red-600 text-white hover:bg-red-700 ${
+                    isDeleting === product.id ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   {isDeleting === product.id ? 'Deleting...' : 'Delete'}
                 </button>
@@ -221,6 +238,7 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                 index === products.length - 1 ? 'last-row' : ''
               }`}
             >
+              {/* Product column */}
               <td className="px-4 py-4 whitespace-nowrap text-white">
                 <div className="flex items-center">
                   <div className="h-10 w-10 relative flex-shrink-0">
@@ -238,11 +256,15 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                   </div>
                 </div>
               </td>
+              
+              {/* Category column */}
               <td className="px-4 py-4 whitespace-nowrap">
                 <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-700 text-white">
                   {product.category}
                 </span>
               </td>
+              
+              {/* Price column */}
               <td className="px-4 py-4 whitespace-nowrap text-white">
                 <div className="text-sm">
                   ₹{product.price.toFixed(2)}
@@ -253,6 +275,8 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                   </div>
                 )}
               </td>
+              
+              {/* Stock column */}
               <td className="px-4 py-4 whitespace-nowrap">
                 <span
                   className={`text-sm font-medium ${
@@ -266,6 +290,8 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                   {product.stock}
                 </span>
               </td>
+              
+              {/* Status column */}
               {showActions && (
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="flex space-x-2">
@@ -292,17 +318,27 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                   </div>
                 </td>
               )}
+              
+              {/* Actions column */}
               {showActions && (
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    disabled={isDeleting === product.id}
-                    className={`px-2 py-1 text-xs rounded-md bg-red-600 text-white hover:bg-red-700 ${
-                      isDeleting === product.id ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    {isDeleting === product.id ? 'Deleting...' : 'Delete'}
-                  </button>
+                  <div className="flex space-x-2">
+                    <Link 
+                      href={`/admin/products/${product.id}`}
+                      className="px-2 py-1 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      disabled={isDeleting === product.id}
+                      className={`px-2 py-1 text-xs rounded-md bg-red-600 text-white hover:bg-red-700 ${
+                        isDeleting === product.id ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      {isDeleting === product.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
                 </td>
               )}
             </tr>
