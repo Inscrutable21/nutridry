@@ -132,28 +132,28 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <AdminHeader />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-6 dark:text-white">Dashboard</h1>
         
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white p-6 rounded-lg shadow animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+              <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow animate-pulse">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
               </div>
             ))}
           </div>
         ) : error ? (
           <>
-            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
-              <p className="text-yellow-700">{error}</p>
+            <div className="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 dark:border-yellow-600 p-4 mb-6">
+              <p className="text-yellow-700 dark:text-yellow-300">{error}</p>
               <button 
                 onClick={() => window.location.reload()}
-                className="mt-2 text-sm text-yellow-600 hover:text-yellow-800"
+                className="mt-2 text-sm text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300"
               >
                 Try again
               </button>
@@ -162,44 +162,44 @@ export default function AdminDashboardPage() {
             {/* Still show stats if we have them from cache */}
             {stats.productCount > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-lg font-semibold text-gray-700">Products</h2>
-                  <p className="text-3xl font-bold mt-2">{stats.productCount}</p>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:shadow-gray-800/30">
+                  <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Products</h2>
+                  <p className="text-3xl font-bold mt-2 dark:text-white">{stats.productCount}</p>
                 </div>
                 
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-lg font-semibold text-gray-700">Featured Products</h2>
-                  <p className="text-3xl font-bold mt-2">{stats.featuredCount}</p>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:shadow-gray-800/30">
+                  <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Featured Products</h2>
+                  <p className="text-3xl font-bold mt-2 dark:text-white">{stats.featuredCount}</p>
                 </div>
                 
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-lg font-semibold text-gray-700">Bestsellers</h2>
-                  <p className="text-3xl font-bold mt-2">{stats.bestsellerCount}</p>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:shadow-gray-800/30">
+                  <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Bestsellers</h2>
+                  <p className="text-3xl font-bold mt-2 dark:text-white">{stats.bestsellerCount}</p>
                 </div>
               </div>
             )}
           </>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-semibold text-gray-700">Products</h2>
-              <p className="text-3xl font-bold mt-2">{stats.productCount}</p>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:shadow-gray-800/30">
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Products</h2>
+              <p className="text-3xl font-bold mt-2 dark:text-white">{stats.productCount}</p>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-semibold text-gray-700">Featured Products</h2>
-              <p className="text-3xl font-bold mt-2">{stats.featuredCount}</p>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:shadow-gray-800/30">
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Featured Products</h2>
+              <p className="text-3xl font-bold mt-2 dark:text-white">{stats.featuredCount}</p>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-semibold text-gray-700">Bestsellers</h2>
-              <p className="text-3xl font-bold mt-2">{stats.bestsellerCount}</p>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:shadow-gray-800/30">
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Bestsellers</h2>
+              <p className="text-3xl font-bold mt-2 dark:text-white">{stats.bestsellerCount}</p>
             </div>
           </div>
         )}
         
         <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+          <h2 className="text-xl font-semibold mb-4 dark:text-white">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
               href="/admin/products/new"
@@ -217,14 +217,14 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 mb-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md dark:shadow-gray-800/30 p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+              <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300">
                 <ShoppingBag size={24} />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-semibold">Recent Orders</h3>
-                <Link href="/admin/orders" className="text-sm text-blue-600 hover:underline">
+                <h3 className="text-lg font-semibold dark:text-white">Recent Orders</h3>
+                <Link href="/admin/orders" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
                   View all
                 </Link>
               </div>
@@ -232,45 +232,45 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md dark:shadow-gray-800/30 p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4 dark:text-white">Recent Orders</h2>
           {isLoading ? (
             <div className="flex justify-center py-4">
-              <div className="animate-spin h-8 w-8 border-4 border-green-500 rounded-full border-t-transparent"></div>
+              <div className="animate-spin h-8 w-8 border-4 border-green-500 dark:border-green-400 rounded-full border-t-transparent"></div>
             </div>
           ) : recentOrders.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No recent orders</p>
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4">No recent orders</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="py-3 px-4 text-left">Order ID</th>
-                    <th className="py-3 px-4 text-left">Customer</th>
-                    <th className="py-3 px-4 text-left">Date</th>
-                    <th className="py-3 px-4 text-left">Total</th>
-                    <th className="py-3 px-4 text-left">Status</th>
-                    <th className="py-3 px-4 text-left">Action</th>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="py-3 px-4 text-left dark:text-gray-200">Order ID</th>
+                    <th className="py-3 px-4 text-left dark:text-gray-200">Customer</th>
+                    <th className="py-3 px-4 text-left dark:text-gray-200">Date</th>
+                    <th className="py-3 px-4 text-left dark:text-gray-200">Total</th>
+                    <th className="py-3 px-4 text-left dark:text-gray-200">Status</th>
+                    <th className="py-3 px-4 text-left dark:text-gray-200">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentOrders.map((order) => (
-                    <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="py-3 px-4">{order.id.slice(0, 8)}</td>
-                      <td className="py-3 px-4">{order.user?.name || 'N/A'}</td>
-                      <td className="py-3 px-4">{formatDate(order.createdAt)}</td>
-                      <td className="py-3 px-4">₹{order.total.toFixed(2)}</td>
+                    <tr key={order.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td className="py-3 px-4 dark:text-gray-300">{order.id.slice(0, 8)}</td>
+                      <td className="py-3 px-4 dark:text-gray-300">{order.user?.name || 'N/A'}</td>
+                      <td className="py-3 px-4 dark:text-gray-300">{formatDate(order.createdAt)}</td>
+                      <td className="py-3 px-4 dark:text-gray-300">₹{order.total.toFixed(2)}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded-full text-xs ${
-                          order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
+                          order.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                         }`}>
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <Link href={`/admin/orders/${order.id}`} className="text-blue-600 hover:underline">
+                        <Link href={`/admin/orders/${order.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
                           View
                         </Link>
                       </td>

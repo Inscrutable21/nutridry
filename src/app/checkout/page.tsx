@@ -26,7 +26,6 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items = [], cartTotal = 0, clearCart = () => {} } = useCart() || {};
   const { user, isAuthenticated } = useAuth() || {};
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<SavedAddress | null>(null);
   
@@ -149,19 +148,18 @@ export default function CheckoutPage() {
   return (
     <div className="pt-20 pb-16 min-h-screen bg-neutral-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 md:px-6">
-        <h1 className={`text-2xl md:text-3xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Checkout</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Checkout</h1>
         
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Shipping Address Section */}
           <div className="lg:w-2/3">
-            <div className={`rounded-lg shadow-sm overflow-hidden mb-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              <div className={`px-4 md:px-6 py-3 md:py-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <h2 className={`text-base md:text-lg font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Shipping Address</h2>
+            <div className="rounded-lg shadow-sm overflow-hidden mb-6 bg-white dark:bg-gray-800">
+              <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">Shipping Address</h2>
               </div>
               
               <div className="p-4 md:p-6">
                 <AddressManager 
-                  isDarkMode={isDarkMode}
                   onAddressSelect={handleAddressSelect}
                   selectedAddressId={selectedAddress?.id || null}
                   userData={user}
@@ -171,19 +169,19 @@ export default function CheckoutPage() {
             </div>
             
             {/* Payment Method Section - COD Only */}
-            <div className={`rounded-lg shadow-sm overflow-hidden mb-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              <div className={`px-4 md:px-6 py-3 md:py-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <h2 className={`text-base md:text-lg font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Payment Method</h2>
+            <div className="rounded-lg shadow-sm overflow-hidden mb-6 bg-white dark:bg-gray-800">
+              <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">Payment Method</h2>
               </div>
               
               <div className="p-4 md:p-6">
-                <div className="flex items-center p-3 border rounded-md bg-green-50 border-green-500">
-                  <div className="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center mr-3">
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <div className="flex items-center p-3 border rounded-md bg-green-50 dark:bg-green-900/30 border-green-500 dark:border-green-700">
+                  <div className="w-5 h-5 rounded-full border-2 border-green-500 dark:border-green-400 flex items-center justify-center mr-3">
+                    <div className="w-3 h-3 rounded-full bg-green-500 dark:bg-green-400"></div>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Cash on Delivery</p>
-                    <p className="text-xs text-gray-500">Pay when your order is delivered</p>
+                    <p className="font-medium text-gray-900 dark:text-white">Cash on Delivery</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Pay when your order is delivered</p>
                   </div>
                 </div>
               </div>
@@ -192,29 +190,29 @@ export default function CheckoutPage() {
           
           {/* Order Summary */}
           <div className="lg:w-1/3">
-            <div className={`rounded-lg shadow-sm overflow-hidden ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} lg:sticky lg:top-24`}>
-              <div className={`px-4 md:px-6 py-3 md:py-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <h2 className={`text-base md:text-lg font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Order Summary</h2>
+            <div className="rounded-lg shadow-sm overflow-hidden bg-white dark:bg-gray-800 dark:border dark:border-gray-700 lg:sticky lg:top-24">
+              <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">Order Summary</h2>
               </div>
               
               <div className="p-4 md:p-6">
-                <div className={`space-y-3 md:space-y-4 text-sm md:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                <div className="space-y-3 md:space-y-4 text-sm md:text-base text-gray-600 dark:text-gray-300">
                   {/* Item list */}
                   <div className="max-h-60 overflow-y-auto mb-4">
                     {items.map(item => (
                       <div key={`${item.id}-${item.variant}`} className="flex justify-between items-start mb-3">
                         <div className="flex items-start">
-                          <span className="bg-gray-200 text-gray-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2">
+                          <span className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2">
                             {item.quantity}
                           </span>
                           <div>
-                            <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{item.name}</p>
+                            <p className="text-sm text-gray-900 dark:text-white">{item.name}</p>
                             {item.variant && (
-                              <p className="text-xs text-gray-500">Size: {item.variant}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">Size: {item.variant}</p>
                             )}
                           </div>
                         </div>
-                        <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <p className="text-sm text-gray-900 dark:text-white">
                           ₹{(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
@@ -224,7 +222,7 @@ export default function CheckoutPage() {
                   <div className="border-t border-dashed pt-3 mt-3 border-gray-300 dark:border-gray-700">
                     <div className="flex justify-between">
                       <span>Subtotal</span>
-                      <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>₹{cartTotal.toFixed(2)}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">₹{cartTotal.toFixed(2)}</span>
                     </div>
                     
                     <div className="flex justify-between">
@@ -232,7 +230,7 @@ export default function CheckoutPage() {
                       {shippingCost === 0 ? (
                         <span className="italic text-xs md:text-sm">Free</span>
                       ) : (
-                        <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>₹{shippingCost.toFixed(2)}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">₹{shippingCost.toFixed(2)}</span>
                       )}
                     </div>
                     
@@ -245,7 +243,7 @@ export default function CheckoutPage() {
                   <div className="border-t pt-3 mt-3 border-gray-300 dark:border-gray-700">
                     <div className="flex justify-between">
                       <span className="font-medium">Total</span>
-                      <span className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <span className="font-bold text-lg text-gray-900 dark:text-white">
                         ₹{orderTotal.toFixed(2)}
                       </span>
                     </div>
@@ -276,7 +274,7 @@ export default function CheckoutPage() {
                     )}
                   </button>
                   
-                  <p className="text-xs text-center mt-3 text-gray-500">
+                  <p className="text-xs text-center mt-3 text-gray-500 dark:text-gray-400">
                     By placing your order, you agree to our Terms of Service and Privacy Policy
                   </p>
                 </div>
@@ -288,5 +286,3 @@ export default function CheckoutPage() {
     </div>
   )
 }
-
-

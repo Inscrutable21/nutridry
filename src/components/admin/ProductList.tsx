@@ -1,7 +1,7 @@
-// src/components/admin/ProductList.tsx
+// Force dark mode styling for the admin product list
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -22,7 +22,7 @@ type ProductListProps = {
   products: Product[];
   showActions?: boolean;
   onRefresh?: () => void;
-  onProductsChange?: () => Promise<void>; // Add this line to support the prop used in admin page
+  onProductsChange?: () => Promise<void>;
 };
 
 export default function ProductList({ products, showActions = true, onRefresh, onProductsChange }: ProductListProps) {
@@ -30,7 +30,7 @@ export default function ProductList({ products, showActions = true, onRefresh, o
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (confirm('Are you sure you want to delete this product?')) {
       setIsDeleting(id);
       try {
         const response = await fetch(`/api/products/${id}`, {
@@ -41,13 +41,8 @@ export default function ProductList({ products, showActions = true, onRefresh, o
           throw new Error('Failed to delete product');
         }
 
-        // Use onProductsChange if provided, otherwise fall back to onRefresh or router.refresh
         if (onProductsChange) {
           await onProductsChange();
-        } else if (onRefresh) {
-          onRefresh();
-        } else {
-          router.refresh();
         }
       } catch (error) {
         console.error('Error deleting product:', error);
@@ -58,39 +53,15 @@ export default function ProductList({ products, showActions = true, onRefresh, o
     }
   };
 
-  // Update the toggleBestseller and toggleFeatured functions similarly
   const toggleBestseller = async (id: string, currentValue: boolean) => {
     try {
-      // Try PATCH first, then fall back to PUT if needed
-      let response;
-      try {
-        response = await fetch(`/api/products/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bestseller: !currentValue }),
-        });
-        
-        if (response.status === 405) {
-          // If PATCH is not allowed, try PUT
-          throw new Error('Method not allowed');
-        }
-      } catch (patchError) {
-        // Fall back to PUT if PATCH fails
-        console.log('PATCH failed, trying PUT instead:', 
-          patchError instanceof Error ? patchError.message : String(patchError));
-        response = await fetch(`/api/products/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            id,
-            bestseller: !currentValue,
-            // We need to include these required fields for PUT
-            name: 'placeholder', 
-            description: 'placeholder',
-            category: 'placeholder'
-          }),
-        });
-      }
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ bestseller: !currentValue }),
+      });
 
       if (!response.ok) {
         throw new Error('Failed to update product');
@@ -98,113 +69,159 @@ export default function ProductList({ products, showActions = true, onRefresh, o
 
       if (onProductsChange) {
         await onProductsChange();
-      } else if (onRefresh) {
-        onRefresh();
-      } else {
-        router.refresh();
       }
     } catch (error) {
-      console.error('Error updating product:', error instanceof Error ? error.message : String(error));
+      console.error('Error updating product:', error);
       alert('Failed to update product. Please try again.');
     }
   };
 
   const toggleFeatured = async (id: string, currentValue: boolean) => {
     try {
-      console.log(`Toggling featured for product ${id} from ${currentValue} to ${!currentValue}`);
-      
-      // Try PATCH first, then fall back to PUT if needed
-      let response;
-      try {
-        response = await fetch(`/api/products/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ featured: !currentValue }),
-        });
-        
-        if (response.status === 405) {
-          // If PATCH is not allowed, try PUT
-          throw new Error('Method not allowed');
-        }
-      } catch (patchError) {
-        // Fall back to PUT if PATCH fails
-        console.log('PATCH failed, trying PUT instead:', 
-          patchError instanceof Error ? patchError.message : String(patchError));
-        response = await fetch(`/api/products/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            id,
-            featured: !currentValue,
-            // We need to include these required fields for PUT
-            name: 'placeholder', 
-            description: 'placeholder',
-            category: 'placeholder'
-          }),
-        });
-      }
-  
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ featured: !currentValue }),
+      });
+
       if (!response.ok) {
         throw new Error('Failed to update product');
       }
-  
-      const updatedProduct = await response.json();
-      console.log('Updated product:', updatedProduct);
-  
+
       if (onProductsChange) {
         await onProductsChange();
-      } else if (onRefresh) {
-        onRefresh();
-      } else {
-        router.refresh();
       }
     } catch (error) {
-      console.error('Error updating product:', error instanceof Error ? error.message : String(error));
+      console.error('Error updating product:', error);
       alert('Failed to update product. Please try again.');
     }
   };
 
   if (products.length === 0) {
     return (
-      <div className="text-center py-8 bg-gray-50 rounded-md">
-        <p className="text-gray-500">No products found</p>
+      <div className="text-center py-8 bg-gray-800 text-white rounded-md">
+        <p>No products found</p>
       </div>
     );
   }
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      {/* Mobile view (visible on small screens) */}
+      <div className="md:hidden space-y-4">
+        {products.map((product) => (
+          <div 
+            key={product.id} 
+            className="p-4 rounded-lg shadow-sm bg-gray-800 text-white"
+          >
+            <div className="flex items-center mb-3">
+              <div className="h-12 w-12 relative flex-shrink-0">
+                <Image
+                  src={product.image || '/placeholder.png'}
+                  alt={product.name}
+                  fill
+                  className="rounded-md object-cover"
+                />
+              </div>
+              <div className="ml-3 flex-1">
+                <Link href={`/admin/products/${product.id}`} className="font-medium text-white hover:text-green-400">
+                  {product.name}
+                </Link>
+                <p className="text-sm text-gray-300">{product.category}</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div>
+                <span className="text-xs text-gray-300">Price:</span>
+                <p className="font-medium text-white">₹{product.price.toFixed(2)}</p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-300">Stock:</span>
+                <p className={`font-medium ${
+                  product.stock > 10
+                    ? 'text-green-400'
+                    : product.stock > 0
+                    ? 'text-amber-400'
+                    : 'text-red-400'
+                }`}>{product.stock}</p>
+              </div>
+            </div>
+            
+            {showActions && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                <button
+                  onClick={() => toggleBestseller(product.id, product.bestseller)}
+                  className={`px-2 py-1 text-xs rounded-md ${
+                    product.bestseller
+                      ? 'bg-amber-600 text-white'
+                      : 'bg-gray-700 text-white'
+                  }`}
+                >
+                  Bestseller
+                </button>
+                <button
+                  onClick={() => toggleFeatured(product.id, product.featured)}
+                  className={`px-2 py-1 text-xs rounded-md ${
+                    product.featured
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-700 text-white'
+                  }`}
+                >
+                  New Arrival
+                </button>
+                <button
+                  onClick={() => handleDelete(product.id)}
+                  disabled={isDeleting === product.id}
+                  className="px-2 py-1 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
+                >
+                  {isDeleting === product.id ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop view (visible on medium screens and up) */}
+      <table className="min-w-full hidden md:table border-separate border-spacing-0">
+        <thead className="bg-gray-800 text-white">
           <tr>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider rounded-tl-lg">
               Product
             </th>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
               Category
             </th>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
               Price
             </th>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
               Stock
             </th>
             {showActions && (
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Status
               </th>
             )}
             {showActions && (
-              <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider rounded-tr-lg">
                 Actions
               </th>
             )}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {products.map((product) => (
-            <tr key={product.id}>
-              <td className="px-4 py-4 whitespace-nowrap">
+        <tbody>
+          {products.map((product, index) => (
+            <tr 
+              key={product.id} 
+              className={`bg-gray-900 hover:bg-gray-800 ${
+                index === products.length - 1 ? 'last-row' : ''
+              }`}
+            >
+              <td className="px-4 py-4 whitespace-nowrap text-white">
                 <div className="flex items-center">
                   <div className="h-10 w-10 relative flex-shrink-0">
                     <Image
@@ -215,35 +232,35 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                     />
                   </div>
                   <div className="ml-4">
-                    <Link href={`/admin/products/${product.id}`} className="text-sm font-medium text-gray-900 hover:text-green-600">
+                    <Link href={`/admin/products/${product.id}`} className="text-sm font-medium text-white hover:text-green-400">
                       {product.name}
                     </Link>
                   </div>
                 </div>
               </td>
               <td className="px-4 py-4 whitespace-nowrap">
-                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-700 text-white">
                   {product.category}
                 </span>
               </td>
-              <td className="px-4 py-4 whitespace-nowrap">
-                {product.salePrice ? (
-                  <div>
-                    <span className="text-sm text-gray-900">₹{product.salePrice}</span>
-                    <span className="ml-2 text-xs text-gray-500 line-through">₹{product.price}</span>
+              <td className="px-4 py-4 whitespace-nowrap text-white">
+                <div className="text-sm">
+                  ₹{product.price.toFixed(2)}
+                </div>
+                {product.salePrice && (
+                  <div className="text-xs text-red-400">
+                    Sale: ₹{product.salePrice.toFixed(2)}
                   </div>
-                ) : (
-                  <span className="text-sm text-gray-900">₹{product.price}</span>
                 )}
               </td>
               <td className="px-4 py-4 whitespace-nowrap">
                 <span
-                  className={`text-sm ${
+                  className={`text-sm font-medium ${
                     product.stock > 10
-                      ? 'text-green-800'
+                      ? 'text-green-400'
                       : product.stock > 0
-                      ? 'text-amber-600'
-                      : 'text-red-600'
+                      ? 'text-amber-400'
+                      : 'text-red-400'
                   }`}
                 >
                   {product.stock}
@@ -256,8 +273,8 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                       onClick={() => toggleBestseller(product.id, product.bestseller)}
                       className={`px-2 py-1 text-xs rounded-md ${
                         product.bestseller
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-gray-100 text-gray-700'
+                          ? 'bg-amber-600 text-white'
+                          : 'bg-gray-700 text-white'
                       }`}
                     >
                       Bestseller
@@ -266,8 +283,8 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                       onClick={() => toggleFeatured(product.id, product.featured)}
                       className={`px-2 py-1 text-xs rounded-md ${
                         product.featured
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-700'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-700 text-white'
                       }`}
                     >
                       New Arrival
@@ -276,28 +293,31 @@ export default function ProductList({ products, showActions = true, onRefresh, o
                 </td>
               )}
               {showActions && (
-                <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end space-x-2">
-                    <Link
-                      href={`/admin/products/${product.id}`}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      disabled={isDeleting === product.id}
-                      className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                    >
-                      {isDeleting === product.id ? 'Deleting...' : 'Delete'}
-                    </button>
-                  </div>
+                <td className="px-4 py-4 whitespace-nowrap">
+                  <button
+                    onClick={() => handleDelete(product.id)}
+                    disabled={isDeleting === product.id}
+                    className={`px-2 py-1 text-xs rounded-md bg-red-600 text-white hover:bg-red-700 ${
+                      isDeleting === product.id ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {isDeleting === product.id ? 'Deleting...' : 'Delete'}
+                  </button>
                 </td>
               )}
             </tr>
           ))}
         </tbody>
       </table>
+
+      <style jsx>{`
+        .last-row td:first-child {
+          border-bottom-left-radius: 0.5rem;
+        }
+        .last-row td:last-child {
+          border-bottom-right-radius: 0.5rem;
+        }
+      `}</style>
     </div>
   );
 }

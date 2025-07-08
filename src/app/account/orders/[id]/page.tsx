@@ -106,28 +106,28 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'processing':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'shipped':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
       case 'delivered':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 dark:bg-gray-900">
       <div className="mb-6">
         <Link 
           href="/account/orders" 
-          className="text-green-600 hover:text-green-800 flex items-center gap-1"
+          className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 flex items-center gap-1"
         >
           ← Back to My Orders
         </Link>
@@ -138,13 +138,13 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
           <div className="animate-spin h-8 w-8 border-4 border-green-500 rounded-full border-t-transparent"></div>
         </div>
       ) : error ? (
-        <div className="bg-red-50 p-4 rounded-md text-red-800 mb-6">
+        <div className="bg-red-50 dark:bg-red-900 p-4 rounded-md text-red-800 dark:text-red-200 mb-6">
           {error}
         </div>
       ) : !order ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <h3 className="text-lg font-medium mb-2">Order not found</h3>
-          <p className="text-gray-600 mb-6">The order you're looking for doesn't exist or you don't have permission to view it.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+          <h3 className="text-lg font-medium mb-2 dark:text-white">Order not found</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">The order you're looking for doesn't exist or you don't have permission to view it.</p>
           <Link 
             href="/account/orders" 
             className="inline-block bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition"
@@ -154,11 +154,11 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-lg font-semibold">Order #{order.id.slice(0, 8)}</h2>
-                <p className="text-gray-500">Placed on {formatDate(order.createdAt)}</p>
+                <h2 className="text-lg font-semibold dark:text-white">Order #{order.id.slice(0, 8)}</h2>
+                <p className="text-gray-500 dark:text-gray-400">Placed on {formatDate(order.createdAt)}</p>
               </div>
               <div>
                 <span className={`px-3 py-1 rounded-full text-sm ${getStatusBadgeClass(order.status)}`}>
@@ -167,18 +167,18 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
               </div>
             </div>
             
-            <div className="border-t border-gray-200 pt-4 mt-4">
-              <h3 className="font-medium mb-2">Order Status</h3>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+              <h3 className="font-medium mb-2 dark:text-white">Order Status</h3>
               <div className="flex flex-wrap gap-2 mb-4">
                 {['pending', 'processing', 'shipped', 'delivered', 'completed'].map((status, index) => (
                   <div 
                     key={status}
-                    className={`flex items-center ${index < ['pending', 'processing', 'shipped', 'delivered', 'completed'].indexOf(order.status) + 1 ? 'text-green-600' : 'text-gray-400'}`}
+                    className={`flex items-center ${index < ['pending', 'processing', 'shipped', 'delivered', 'completed'].indexOf(order.status) + 1 ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}
                   >
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-2 ${
                       index < ['pending', 'processing', 'shipped', 'delivered', 'completed'].indexOf(order.status) + 1 
-                        ? 'bg-green-100 text-green-600 border-2 border-green-600' 
-                        : 'bg-gray-100 text-gray-400 border-2 border-gray-300'
+                        ? 'bg-green-100 text-green-600 border-2 border-green-600 dark:bg-green-900 dark:text-green-300 dark:border-green-500' 
+                        : 'bg-gray-100 text-gray-400 border-2 border-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600'
                     }`}>
                       {index < ['pending', 'processing', 'shipped', 'delivered', 'completed'].indexOf(order.status) + 1 ? '✓' : index + 1}
                     </div>
@@ -188,8 +188,8 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                     {index < 4 && (
                       <div className={`h-0.5 w-8 mx-2 ${
                         index < ['pending', 'processing', 'shipped', 'delivered', 'completed'].indexOf(order.status) 
-                          ? 'bg-green-600' 
-                          : 'bg-gray-300'
+                          ? 'bg-green-600 dark:bg-green-500' 
+                          : 'bg-gray-300 dark:bg-gray-600'
                       }`} />
                     )}
                   </div>
@@ -199,43 +199,43 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="font-semibold mb-3">Shipping Address</h3>
-              <p className="font-medium">{order.address.name}</p>
-              <p>{order.address.address}, {order.address.locality}</p>
-              <p>{order.address.city}, {order.address.state} - {order.address.pincode}</p>
-              {order.address.landmark && <p>Landmark: {order.address.landmark}</p>}
-              <p>Phone: {order.address.phone}</p>
-              {order.address.alternatePhone && <p>Alt. Phone: {order.address.alternatePhone}</p>}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h3 className="font-semibold mb-3 dark:text-white">Shipping Address</h3>
+              <p className="font-medium dark:text-white">{order.address.name}</p>
+              <p className="dark:text-gray-300">{order.address.address}, {order.address.locality}</p>
+              <p className="dark:text-gray-300">{order.address.city}, {order.address.state} - {order.address.pincode}</p>
+              {order.address.landmark && <p className="dark:text-gray-300">Landmark: {order.address.landmark}</p>}
+              <p className="dark:text-gray-300">Phone: {order.address.phone}</p>
+              {order.address.alternatePhone && <p className="dark:text-gray-300">Alt. Phone: {order.address.alternatePhone}</p>}
             </div>
             
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="font-semibold mb-3">Payment Information</h3>
-              <p><span className="text-gray-600">Method:</span> {
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h3 className="font-semibold mb-3 dark:text-white">Payment Information</h3>
+              <p className="dark:text-gray-300"><span className="text-gray-600 dark:text-gray-400">Method:</span> {
                 order.paymentMethod === 'cod' ? 'Cash on Delivery' : 
                 order.paymentMethod === 'upi' ? 'UPI Payment' : 
                 order.paymentMethod
               }</p>
-              <p><span className="text-gray-600">Subtotal:</span> ₹{order.subtotal.toFixed(2)}</p>
-              <p><span className="text-gray-600">Shipping:</span> {order.shippingCost === 0 ? 'Free' : `₹${order.shippingCost.toFixed(2)}`}</p>
-              <p className="font-medium mt-2"><span className="text-gray-600">Total:</span> ₹{order.total.toFixed(2)}</p>
+              <p className="dark:text-gray-300"><span className="text-gray-600 dark:text-gray-400">Subtotal:</span> ₹{order.subtotal.toFixed(2)}</p>
+              <p className="dark:text-gray-300"><span className="text-gray-600 dark:text-gray-400">Shipping:</span> {order.shippingCost === 0 ? 'Free' : `₹${order.shippingCost.toFixed(2)}`}</p>
+              <p className="font-medium mt-2 dark:text-white"><span className="text-gray-600 dark:text-gray-400">Total:</span> ₹{order.total.toFixed(2)}</p>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="font-semibold mb-4">Order Items</h3>
-            <div className="divide-y divide-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 className="font-semibold mb-4 dark:text-white">Order Items</h3>
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {order.items.map((item, index) => (
                 <div 
                   key={`order-item-${index}-${item.productId || item.variantId || item.name}`} 
                   className="py-4 flex items-center"
                 >
                   <div className="flex-1">
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium dark:text-white">{item.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {item.variant && `Variant: ${item.variant}`}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {item.quantity} × ₹{item.price.toFixed(2)} = ₹{(item.quantity * item.price).toFixed(2)}
                     </p>
                   </div>
@@ -248,10 +248,3 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
     </div>
   );
 }
-
-
-
-
-
-
-

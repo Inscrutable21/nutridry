@@ -48,23 +48,23 @@ export default function CheckoutSuccessPage() {
   }, [items, router]);
   
   return (
-    <div className="pt-20 pb-16 min-h-screen bg-neutral-50">
+    <div className="pt-20 pb-16 min-h-screen bg-neutral-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="max-w-md mx-auto bg-white p-6 md:p-8 rounded-lg shadow-sm text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 p-6 md:p-8 rounded-lg shadow-sm text-center">
+          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           
-          <h1 className="text-2xl md:text-3xl font-playfair mb-4 text-gray-900">Order Placed Successfully!</h1>
+          <h1 className="text-2xl md:text-3xl font-playfair mb-4 text-gray-900 dark:text-white">Order Placed Successfully!</h1>
           
-          <p className="text-gray-600 mb-2">
+          <p className="text-gray-600 dark:text-gray-300 mb-2">
             Thank you for your order. We've received your order details and will process it shortly.
           </p>
           
-          <p className="text-gray-600 mb-8">
-            <span className="font-medium">Payment Method:</span> {paymentMethod}
+          <p className="text-gray-600 dark:text-gray-300 mb-8">
+            <span className="font-medium dark:text-gray-200">Payment Method:</span> {paymentMethod}
           </p>
           
           <div className="space-y-4">
@@ -78,7 +78,7 @@ export default function CheckoutSuccessPage() {
             <div>
               <Link 
                 href="/"
-                className="inline-block text-green-600 hover:text-green-700 font-medium"
+                className="inline-block text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-medium"
               >
                 Return to Home
               </Link>

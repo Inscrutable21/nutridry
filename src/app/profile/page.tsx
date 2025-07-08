@@ -18,8 +18,39 @@ export default function ProfilePage() {
 
   // Check for dark mode
   useEffect(() => {
-    setIsDarkMode(document.documentElement.classList.contains('dark'));
+    if (typeof window !== 'undefined') {
+      // Check localStorage first
+      const darkModePreference = localStorage.getItem('darkMode');
+      if (darkModePreference !== null) {
+        setIsDarkMode(darkModePreference === 'true');
+        document.documentElement.classList.toggle('dark', darkModePreference === 'true');
+      } else {
+        // If no preference is stored, check system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setIsDarkMode(prefersDark);
+        document.documentElement.classList.toggle('dark', prefersDark);
+      }
+
+      // Listen for system theme changes
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e: MediaQueryListEvent) => {
+        if (localStorage.getItem('darkMode') === null) {
+          setIsDarkMode(e.matches);
+          document.documentElement.classList.toggle('dark', e.matches);
+        }
+      };
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
   }, []);
+
+  // Toggle dark mode function
+  const toggleDarkMode = () => {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    document.documentElement.classList.toggle('dark', newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode.toString());
+  };
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -79,14 +110,23 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors">
       <div className="container mx-auto px-4 py-16">
-        <h1 className="text-3xl font-bold mb-8 font-playfair">My Profile</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold font-playfair">My Profile</h1>
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            {isDarkMode ? '☀️' : '🌙'}
+          </button>
+        </div>
         
         <div className="max-w-2xl mx-auto">
           {/* Profile Information */}
-          <div className={`rounded-lg shadow-sm overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className={`px-6 py-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="rounded-lg shadow-sm overflow-hidden bg-white dark:bg-gray-800 transition-colors">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-medium">Personal Information</h2>
             </div>
             
@@ -104,11 +144,7 @@ export default function ProfilePage() {
                         name="name"
                         value={profileData.name}
                         onChange={handleProfileChange}
-                        className={`w-full px-4 py-2 rounded-md border ${
-                          isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-white' 
-                            : 'bg-white border-gray-300'
-                        }`}
+                        className="w-full px-4 py-2 rounded-md border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
                         required
                       />
                     </div>
@@ -123,15 +159,11 @@ export default function ProfilePage() {
                         name="email"
                         value={profileData.email}
                         onChange={handleProfileChange}
-                        className={`w-full px-4 py-2 rounded-md border ${
-                          isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-white' 
-                            : 'bg-white border-gray-300'
-                        }`}
+                        className="w-full px-4 py-2 rounded-md border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors cursor-not-allowed opacity-60"
                         required
                         disabled
                       />
-                      <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email cannot be changed</p>
                     </div>
                     
                     <div>
@@ -144,29 +176,21 @@ export default function ProfilePage() {
                         name="mobile"
                         value={profileData.mobile}
                         onChange={handleProfileChange}
-                        className={`w-full px-4 py-2 rounded-md border ${
-                          isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-white' 
-                            : 'bg-white border-gray-300'
-                        }`}
+                        className="w-full px-4 py-2 rounded-md border bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
                       />
                     </div>
                     
                     <div className="flex space-x-3 pt-2">
                       <button
                         type="submit"
-                        className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+                        className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
                       >
                         Save Changes
                       </button>
                       <button
                         type="button"
                         onClick={() => setIsEditingProfile(false)}
-                        className={`px-4 py-2 rounded-md ${
-                          isDarkMode 
-                            ? 'bg-gray-700 hover:bg-gray-600' 
-                            : 'bg-gray-200 hover:bg-gray-300'
-                        }`}
+                        className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                       >
                         Cancel
                       </button>
@@ -176,12 +200,12 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500">Full Name</h3>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Full Name</h3>
                     <p className="mt-1">{user?.name || 'Not provided'}</p>
                   </div>
                   
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500">Email Address</h3>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Email Address</h3>
                     <p className="mt-1">{user?.email || 'Not provided'}</p>
                     {user && !user.isVerified && (
                       <p className="text-xs text-orange-500 mt-1">Email not verified</p>
@@ -189,14 +213,14 @@ export default function ProfilePage() {
                   </div>
                   
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500">Phone Number</h3>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone Number</h3>
                     <p className="mt-1">{user?.mobile || 'Not provided'}</p>
                   </div>
                   
                   <div className="pt-2">
                     <button
                       onClick={() => setIsEditingProfile(true)}
-                      className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+                      className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
                     >
                       Edit Profile
                     </button>
@@ -206,8 +230,8 @@ export default function ProfilePage() {
             </div>
           </div>
           
-          <div className={`rounded-lg shadow-sm overflow-hidden mt-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className={`px-6 py-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="rounded-lg shadow-sm overflow-hidden mt-6 bg-white dark:bg-gray-800 transition-colors">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-medium">Account Actions</h2>
             </div>
             
@@ -218,7 +242,7 @@ export default function ProfilePage() {
                     logout();
                   }
                 }}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 Logout
               </button>
@@ -229,6 +253,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-
-

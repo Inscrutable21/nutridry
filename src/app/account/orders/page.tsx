@@ -91,27 +91,27 @@ export default function MyOrdersPage() {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'processing':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'shipped':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
       case 'delivered':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 dark:bg-gray-900">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">My Orders</h1>
-        <p className="text-gray-600">View and track your order history</p>
+        <h1 className="text-2xl font-bold mb-2 dark:text-white">My Orders</h1>
+        <p className="text-gray-600 dark:text-gray-300">View and track your order history</p>
       </div>
 
       {isLoading ? (
@@ -119,13 +119,13 @@ export default function MyOrdersPage() {
           <div className="animate-spin h-8 w-8 border-4 border-green-500 rounded-full border-t-transparent"></div>
         </div>
       ) : error ? (
-        <div className="bg-red-50 p-4 rounded-md text-red-800 mb-6">
+        <div className="bg-red-50 dark:bg-red-900 p-4 rounded-md text-red-800 dark:text-red-200 mb-6">
           {error}
         </div>
       ) : orders.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <h3 className="text-lg font-medium mb-2">No orders yet</h3>
-          <p className="text-gray-600 mb-6">You haven't placed any orders yet.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+          <h3 className="text-lg font-medium mb-2 dark:text-white">No orders yet</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">You haven't placed any orders yet.</p>
           <Link 
             href="/products" 
             className="inline-block bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition"
@@ -136,12 +136,12 @@ export default function MyOrdersPage() {
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
-            <div key={order.id} className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="p-6 border-b">
+            <div key={order.id} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+              <div className="p-6 border-b dark:border-gray-700">
                 <div className="flex flex-wrap justify-between items-center gap-4">
                   <div>
-                    <h3 className="text-lg font-medium">Order #{order.id.slice(0, 8)}</h3>
-                    <p className="text-gray-500">Placed on {formatDate(order.createdAt)}</p>
+                    <h3 className="text-lg font-medium dark:text-white">Order #{order.id.slice(0, 8)}</h3>
+                    <p className="text-gray-500 dark:text-gray-400">Placed on {formatDate(order.createdAt)}</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className={`px-3 py-1 rounded-full text-sm ${getStatusBadgeClass(order.status)}`}>
@@ -149,7 +149,7 @@ export default function MyOrdersPage() {
                     </span>
                     <Link 
                       href={`/account/orders/${order.id}`}
-                      className="text-green-600 hover:text-green-800 font-medium"
+                      className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-medium"
                     >
                       View Details
                     </Link>
@@ -160,7 +160,7 @@ export default function MyOrdersPage() {
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <h4 className="font-medium mb-2">Items</h4>
+                    <h4 className="font-medium mb-2 dark:text-white">Items</h4>
                     <div className="space-y-2">
                       {order.items.slice(0, 2).map((item, index) => (
                         <div 
@@ -168,15 +168,15 @@ export default function MyOrdersPage() {
                           className="flex items-center gap-3"
                         >
                           <div>
-                            <p className="text-sm font-medium">{item.name}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm font-medium dark:text-white">{item.name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                               {item.quantity} × ₹{item.price.toFixed(2)}
                             </p>
                           </div>
                         </div>
                       ))}
                       {order.items.length > 2 && (
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           +{order.items.length - 2} more items
                         </p>
                       )}
@@ -184,21 +184,21 @@ export default function MyOrdersPage() {
                   </div>
                   
                   <div>
-                    <h4 className="font-medium mb-2">Shipping</h4>
-                    <p className="text-sm">{order.address.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <h4 className="font-medium mb-2 dark:text-white">Shipping</h4>
+                    <p className="text-sm dark:text-gray-200">{order.address.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {order.address.city}, {order.address.state}
                     </p>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium mb-2">Payment</h4>
-                    <p className="text-sm">
+                    <h4 className="font-medium mb-2 dark:text-white">Payment</h4>
+                    <p className="text-sm dark:text-gray-200">
                       {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 
                        order.paymentMethod === 'upi' ? 'UPI Payment' : 
                        order.paymentMethod}
                     </p>
-                    <p className="text-sm font-medium mt-1">
+                    <p className="text-sm font-medium mt-1 dark:text-white">
                       Total: ₹{order.total.toFixed(2)}
                     </p>
                   </div>
@@ -211,6 +211,3 @@ export default function MyOrdersPage() {
     </div>
   );
 }
-
-
-

@@ -104,13 +104,13 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-emerald-800 font-playfair">
+          <h1 className="text-3xl font-bold text-emerald-800 dark:text-emerald-400 font-playfair">
             TheNutriDry
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
             {step === 1 ? 'Create your account' : 'Verify your email'}
           </p>
         </div>
@@ -125,13 +125,13 @@ export default function SignupPage() {
                   name="name"
                   type="text"
                   required
-                  className="appearance-none rounded-t-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-t-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
                   placeholder="Full Name"
                   value={formState.name}
                   onChange={handleChange}
                   disabled={isSubmitting}
                 />
-                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                {errors.name && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.name}</p>}
               </div>
               
               <div className="mb-4">
@@ -142,13 +142,13 @@ export default function SignupPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
                   placeholder="Email address"
                   value={formState.email}
                   onChange={handleChange}
                   disabled={isSubmitting}
                 />
-                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                {errors.email && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.email}</p>}
               </div>
               
               <div className="mb-4">
@@ -158,13 +158,13 @@ export default function SignupPage() {
                   name="mobile"
                   type="tel"
                   required
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
                   placeholder="Mobile Number"
                   value={formState.mobile}
                   onChange={handleChange}
                   disabled={isSubmitting}
                 />
-                {errors.mobile && <p className="text-red-500 text-xs mt-1">{errors.mobile}</p>}
+                {errors.mobile && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.mobile}</p>}
               </div>
               
               <div className="mb-4">
@@ -175,13 +175,13 @@ export default function SignupPage() {
                   type="password"
                   autoComplete="new-password"
                   required
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
                   placeholder="Password"
                   value={formState.password}
                   onChange={handleChange}
                   disabled={isSubmitting}
                 />
-                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                {errors.password && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.password}</p>}
               </div>
               
               <div>
@@ -192,33 +192,33 @@ export default function SignupPage() {
                   type="password"
                   autoComplete="new-password"
                   required
-                  className="appearance-none rounded-b-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-b-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
                   placeholder="Confirm Password"
                   value={formState.confirmPassword}
                   onChange={handleChange}
                   disabled={isSubmitting}
                 />
-                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.confirmPassword}</p>}
               </div>
             </div>
             
             {errors.form && (
-              <div className="text-red-500 text-sm text-center">{errors.form}</div>
+              <div className="text-red-500 dark:text-red-400 text-sm text-center">{errors.form}</div>
             )}
             
             <div>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-900"
               >
                 {isSubmitting ? 'Creating account...' : 'Sign up'}
               </button>
             </div>
             
-            <div className="text-sm text-center">
+            <div className="text-sm text-center dark:text-gray-300">
               Already have an account?{' '}
-              <Link href="/admin/login" className="font-medium text-emerald-600 hover:text-emerald-500">
+              <Link href="/admin/login" className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300">
                 Sign in
               </Link>
             </div>
@@ -226,7 +226,7 @@ export default function SignupPage() {
         ) : (
           <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
             <div>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 We've sent a verification code to your email. Please enter it below.
               </p>
               <label htmlFor="otp" className="sr-only">Verification Code</label>
@@ -235,20 +235,20 @@ export default function SignupPage() {
                 name="otp"
                 type="text"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 focus:z-10 sm:text-sm"
                 placeholder="Enter verification code"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 disabled={isSubmitting}
               />
-              {errors.otp && <p className="text-red-500 text-xs mt-1">{errors.otp}</p>}
+              {errors.otp && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.otp}</p>}
             </div>
             
             <div>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-900"
               >
                 {isSubmitting ? 'Verifying...' : 'Verify'}
               </button>

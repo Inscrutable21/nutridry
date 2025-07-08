@@ -20,116 +20,190 @@ interface Order {
   }[];
 }
 
-export default function AdminOrdersPage() {
-  // --- THE FIX IS HERE ---
-  // Initialize the 'orders' state with an empty array `[]`.
-  // This prevents the "cannot read properties of undefined" error on the initial render.
+export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    async function fetchOrders() {
       try {
         setLoading(true);
-        setError(null);
-        
         const response = await fetch('/api/orders');
+        
         if (!response.ok) {
           throw new Error('Failed to fetch orders');
         }
         
         const data = await response.json();
-        setOrders(data.orders || []); // Ensure we always set an array
-        
+        setOrders(data.orders || []);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        setError(message);
-        console.error(err);
+        console.error('Error fetching orders:', err);
+        setError('Failed to load orders. Please try again.');
       } finally {
         setLoading(false);
       }
-    };
-
+    }
+    
     fetchOrders();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
+
+  const filteredOrders = orders.filter(order => 
+    order.id.includes(searchTerm) || 
+    order.user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    order.user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">All Orders</h1>
-
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Orders</h1>
+        <div className="w-full sm:w-auto">
+          <input
+            type="text"
+            placeholder="Search by order ID or customer name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
+          />
+        </div>
+      </div>
+      
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <p>Error: {error}</p>
+        <div className="bg-red-900 border border-red-700 text-red-100 px-4 py-3 rounded mb-4">
+          {error}
         </div>
       )}
-
+      
       {loading ? (
-        <div className="flex justify-center items-center py-10">
-          <div className="animate-spin h-8 w-8 border-4 border-amber-500 rounded-full border-t-transparent"></div>
+        <div className="flex justify-center py-10">
+          <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
-      ) : orders.length === 0 ? ( // This line will now work correctly
-        <div className="text-center py-8">
-          <p className="text-gray-500">No orders found</p>
+      ) : filteredOrders.length === 0 ? (
+        <div className="bg-gray-800 text-white p-6 rounded-lg text-center">
+          <p className="text-lg">No orders found</p>
+          <p className="text-gray-300 mt-2">Try adjusting your search or check back later.</p>
         </div>
       ) : (
-        <div className="bg-white shadow-md rounded-lg overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">{order.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {format(new Date(order.createdAt), 'dd MMM yyyy, h:mm a')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <span className="text-sm text-gray-900">
-                        {order.items && Array.isArray(order.items) && order.items.length > 0 
-                          ? `${order.items.length} item${order.items.length > 1 ? 's' : ''}`
-                          : 'No items'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.user?.name || 'N/A'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{order.total.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                      order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link href={`/admin/orders/${order.id}`} className="text-indigo-600 hover:text-indigo-900">
-                      View
+        <div className="bg-gray-900 rounded-lg shadow-md overflow-hidden">
+          {/* Mobile view */}
+          <div className="block md:hidden">
+            {filteredOrders.map((order) => (
+              <div key={order.id} className="p-4 border-b border-gray-700 last:border-b-0">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <Link href={`/admin/orders/${order.id}`} className="text-sm font-medium text-blue-400 hover:text-blue-300">
+                      Order #{order.id.slice(0, 8)}
                     </Link>
-                  </td>
+                    <p className="text-xs text-gray-300 mt-1">
+                      {format(new Date(order.createdAt), 'MMM d, yyyy • h:mm a')}
+                    </p>
+                  </div>
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    order.status === 'completed' ? 'bg-green-900 text-green-200' :
+                    order.status === 'pending' ? 'bg-yellow-900 text-yellow-200' :
+                    order.status === 'processing' ? 'bg-blue-900 text-blue-200' :
+                    order.status === 'shipped' ? 'bg-purple-900 text-purple-200' :
+                    order.status === 'delivered' ? 'bg-green-900 text-green-200' :
+                    'bg-red-900 text-red-200'
+                  }`}>
+                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  </span>
+                </div>
+                
+                <div className="mb-3">
+                  <p className="text-sm text-white">{order.user.name}</p>
+                  <p className="text-xs text-gray-300">{order.user.email}</p>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-medium text-white">₹{order.total.toFixed(2)}</p>
+                  <Link 
+                    href={`/admin/orders/${order.id}`}
+                    className="px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Desktop view */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-800 text-white">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Order ID
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Total
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {filteredOrders.map((order) => (
+                  <tr key={order.id} className="bg-gray-900 hover:bg-gray-800">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                      #{order.id.slice(0, 8)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      {format(new Date(order.createdAt), 'MMM d, yyyy')}
+                      <div className="text-xs text-gray-400">
+                        {format(new Date(order.createdAt), 'h:mm a')}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-white">{order.user.name}</div>
+                      <div className="text-xs text-gray-300">{order.user.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                      ₹{order.total.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        order.status === 'completed' ? 'bg-green-900 text-green-200' :
+                        order.status === 'pending' ? 'bg-yellow-900 text-yellow-200' :
+                        order.status === 'processing' ? 'bg-blue-900 text-blue-200' :
+                        order.status === 'shipped' ? 'bg-purple-900 text-purple-200' :
+                        order.status === 'delivered' ? 'bg-green-900 text-green-200' :
+                        'bg-red-900 text-red-200'
+                      }`}>
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      <Link 
+                        href={`/admin/orders/${order.id}`}
+                        className="text-blue-400 hover:text-blue-300"
+                      >
+                        View Details
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
   );
 }
-
-
 
 
 

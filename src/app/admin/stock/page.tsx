@@ -31,10 +31,7 @@ export default function StockManagement() {
   }, []);
 
   const fetchStockData = async () => {
-    // Don't show loading indicator on manual refresh if data is already there
-    if (variants.length === 0) {
-        setLoading(true);
-    }
+    setLoading(true);
     setError('');
     
     try {
@@ -61,12 +58,19 @@ export default function StockManagement() {
     }
   };
 
+  const handleEditStock = (variant: Variant) => {
+    setEditingVariant(variant.id);
+    setStockValue(variant.stock);
+  };
+
   const handleUpdateStock = async (variantId: string) => {
-    if (isUpdating) return; // Prevent double clicks
+    if (stockValue < 0) {
+      setError('Stock cannot be negative');
+      return;
+    }
     
     setIsUpdating(true);
     setError('');
-    setUpdateStatus('');
 
     try {
       const response = await fetch('/api/stock/update', {
@@ -102,33 +106,40 @@ export default function StockManagement() {
     }
   };
 
-  const filteredVariants = variants.filter(variant => 
-    variant.product.name.toLowerCase().includes(filter.toLowerCase()) ||
-    variant.product.category.toLowerCase().includes(filter.toLowerCase()) ||
-    variant.size.toLowerCase().includes(filter.toLowerCase())
-  );
+  const handleCancelEdit = () => {
+    setEditingVariant(null);
+  };
+
+  const filteredVariants = variants.filter(variant => {
+    const searchTerm = filter.toLowerCase();
+    return (
+      variant.product.name.toLowerCase().includes(searchTerm) ||
+      variant.product.category.toLowerCase().includes(searchTerm) ||
+      variant.size.toLowerCase().includes(searchTerm)
+    );
+  });
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Stock Management</h1>
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Stock Management</h1>
         <button 
           onClick={fetchStockData}
           disabled={loading || isUpdating}
-          className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto px-3 py-1.5 sm:px-4 sm:py-2 bg-amber-500 text-white text-sm rounded-md hover:bg-amber-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {loading ? 'Refreshing...' : 'Refresh Stock'}
         </button>
       </div>
       
       {updateStatus && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div className="bg-green-900 border border-green-700 text-green-100 px-4 py-3 rounded mb-4 text-sm">
           {updateStatus}
         </div>
       )}
       
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-900 border border-red-700 text-red-100 px-4 py-3 rounded mb-4 text-sm">
           {error}
         </div>
       )}
@@ -137,9 +148,9 @@ export default function StockManagement() {
         <input
           type="text"
           placeholder="Filter by product name, category or size..."
-          className="w-full md:w-1/2 px-4 py-2 border rounded-md"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
+          className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
         />
       </div>
       
@@ -147,106 +158,204 @@ export default function StockManagement() {
         <div className="flex justify-center py-10">
           <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
+      ) : filteredVariants.length === 0 ? (
+        <div className="bg-gray-800 text-white p-6 rounded-lg text-center">
+          <p className="text-lg">No variants found</p>
+          <p className="text-gray-300 mt-2">Try adjusting your filter or add product variants.</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size/Variant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredVariants.map((variant) => (
-                <tr key={variant.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 relative">
-                        <Image
-                          src={variant.product.image || '/placeholder.jpg'}
-                          alt={variant.product.name}
-                          fill
-                          className="object-cover rounded-md"
-                          sizes="40px"
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{variant.product.name}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {variant.product.category}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {variant.size}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ₹{variant.price.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {editingVariant === variant.id ? (
-                      <input
-                        type="number"
-                        min="0"
-                        value={stockValue}
-                        onChange={(e) => setStockValue(parseInt(e.target.value, 10) || 0)}
-                        className="w-20 px-2 py-1 border rounded-md"
-                        autoFocus
-                      />
-                    ) : (
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        variant.stock > 10 
-                          ? 'bg-green-100 text-green-800' 
-                          : variant.stock > 0 
-                            ? 'bg-yellow-100 text-yellow-800' 
-                            : 'bg-red-100 text-red-800'
-                      }`}>
-                        {variant.stock}
+        <div className="bg-gray-900 rounded-lg shadow-md overflow-hidden">
+          {/* Mobile view */}
+          <div className="block md:hidden">
+            {filteredVariants.map((variant) => (
+              <div key={variant.id} className="p-4 border-b border-gray-700 last:border-b-0">
+                <div className="flex items-center mb-3">
+                  <div className="h-12 w-12 relative flex-shrink-0">
+                    <Image
+                      src={variant.product.image || '/placeholder.jpg'}
+                      alt={variant.product.name}
+                      fill
+                      className="object-cover rounded-md"
+                      sizes="48px"
+                    />
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <div className="text-sm font-medium text-white">{variant.product.name}</div>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-gray-700 text-white">
+                        {variant.product.category}
                       </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-gray-700 text-white">
+                        Size: {variant.size}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between mt-3">
+                  <div>
+                    <span className="text-xs text-gray-300">Price:</span>
+                    <p className="text-sm text-white">₹{variant.price.toFixed(2)}</p>
+                  </div>
+                  
+                  <div>
                     {editingVariant === variant.id ? (
-                      <div className="flex space-x-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="number"
+                          min="0"
+                          value={stockValue}
+                          onChange={(e) => setStockValue(parseInt(e.target.value, 10) || 0)}
+                          className="w-16 px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded-md text-white"
+                        />
                         <button
                           onClick={() => handleUpdateStock(variant.id)}
-                          className="text-green-600 hover:text-green-900 disabled:text-gray-400 disabled:cursor-not-allowed"
                           disabled={isUpdating}
+                          className="p-1 bg-green-600 text-white rounded-md text-xs"
                         >
-                          {isUpdating ? 'Saving...' : 'Save'}
+                          ✓
                         </button>
                         <button
-                          onClick={() => setEditingVariant(null)}
-                          className="text-gray-600 hover:text-gray-900 disabled:text-gray-400"
-                          disabled={isUpdating}
+                          onClick={handleCancelEdit}
+                          className="p-1 bg-red-600 text-white rounded-md text-xs"
                         >
-                          Cancel
+                          ✕
                         </button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => {
-                          setEditingVariant(variant.id);
-                          setStockValue(variant.stock);
-                        }}
-                        className="text-indigo-600 hover:text-indigo-900 disabled:text-gray-400"
-                        disabled={isUpdating}
-                      >
-                        Edit Stock
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          variant.stock > 10 ? 'bg-green-900 text-green-200' : 
+                          variant.stock > 0 ? 'bg-yellow-900 text-yellow-200' : 
+                          'bg-red-900 text-red-200'
+                        }`}>
+                          {variant.stock}
+                        </span>
+                        <button
+                          onClick={() => handleEditStock(variant)}
+                          className="p-1 bg-blue-600 text-white rounded-md text-xs"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     )}
-                  </td>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Desktop view */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-800 text-white">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Product
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Size
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Price
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Stock
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {filteredVariants.map((variant) => (
+                  <tr key={variant.id} className="bg-gray-900 hover:bg-gray-800">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 relative">
+                          <Image
+                            src={variant.product.image || '/placeholder.jpg'}
+                            alt={variant.product.name}
+                            fill
+                            className="object-cover rounded-md"
+                            sizes="40px"
+                          />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-white">{variant.product.name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                      {variant.product.category}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                      {variant.size}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                      ₹{variant.price.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {editingVariant === variant.id ? (
+                        <input
+                          type="number"
+                          min="0"
+                          value={stockValue}
+                          onChange={(e) => setStockValue(parseInt(e.target.value, 10) || 0)}
+                          className="w-20 px-2 py-1 border rounded-md bg-gray-700 border-gray-600 text-white"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          variant.stock > 10 
+                            ? 'bg-green-900 text-green-200' 
+                            : variant.stock > 0 
+                              ? 'bg-yellow-900 text-yellow-200' 
+                              : 'bg-red-900 text-red-200'
+                        }`}>
+                          {variant.stock}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                      {editingVariant === variant.id ? (
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleUpdateStock(variant.id)}
+                            disabled={isUpdating}
+                            className={`px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 ${
+                              isUpdating ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            {isUpdating ? 'Saving...' : 'Save'}
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleEditStock(variant)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
+                          Edit Stock
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
