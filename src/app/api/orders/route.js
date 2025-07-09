@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
+import { emailService } from '@/lib/email-service';
 
 /**
  * JSDoc type definition for an item received from the frontend cart.
@@ -36,41 +38,26 @@ export async function POST(request) {
       variantId: item.variantId
     })));
 
-    // --- Input Validation ---
-    if (!userId || !addressId || !paymentMethod) {
-      return NextResponse.json({ error: 'Missing required fields: userId, addressId, and paymentMethod are required.' }, { status: 400 });
-    }
-    
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: 'Items array is required and cannot be empty.' }, { status: 400 });
+    // Validate input
+    if (!userId || !addressId || !paymentMethod || !items || items.length === 0) {
+      return NextResponse.json(
+        { error: 'Missing required fields' }, 
+        { status: 400 }
+      );
     }
 
-    // Ensure all items have proper image URLs
+    // Process items to ensure image URLs are correct
     const processedItems = items.map(item => {
-      // Make a copy to avoid mutating the original
-      const processedItem = { ...item };
-      
-      // Ensure image URLs are properly formatted with absolute paths
-      if (processedItem.image) {
-        // Skip data URLs (they're already complete)
-        if (processedItem.image.startsWith('data:')) {
-          // Keep data URLs as they are
-        }
-        // If image is a relative path, make it absolute
-        else if (!processedItem.image.startsWith('http') && !processedItem.image.startsWith('/')) {
-          processedItem.image = '/' + processedItem.image;
-        }
-        
-        // Fix common image path issues
-        if (processedItem.image.startsWith('/products/') && !processedItem.image.startsWith('/images/products/')) {
-          processedItem.image = '/images' + processedItem.image;
-        }
-      } else {
-        // If no image, use placeholder
-        processedItem.image = '/placeholder.jpg';
+      // Ensure the item has all required fields
+      if (!item.name || !item.price || !item.quantity) {
+        throw new Error(`Invalid item data: ${JSON.stringify(item)}`);
       }
       
-      return processedItem;
+      return {
+        ...item,
+        // Ensure price is a number
+        price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
+      };
     });
 
     // Calculate subtotal
@@ -93,10 +80,36 @@ export async function POST(request) {
         total,
         status: 'pending', // Orders start as pending
       },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        },
+        address: true
+      }
     });
 
     console.log(`New order created with ID: ${newOrder.id}`);
     console.log('Saved order items:', newOrder.items);
+
+    // Send order confirmation email
+    try {
+      await emailService.sendOrderConfirmation({
+        email: newOrder.user.email,
+        customerName: newOrder.user.name,
+        items: newOrder.items,
+        address: newOrder.address,
+        orderId: newOrder.id,
+        total: newOrder.total,
+        orderDate: newOrder.createdAt
+      });
+      console.log(`Order confirmation email sent to ${newOrder.user.email}`);
+    } catch (emailError) {
+      // Log the error but don't fail the order creation
+      console.error('Failed to send order confirmation email:', emailError);
+    }
 
     return NextResponse.json(newOrder, { status: 201 });
 
@@ -172,6 +185,7 @@ export async function GET(request) {
         return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
     }
 }
+
 
 
 

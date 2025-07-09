@@ -1,91 +1,107 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
 
 export default function CheckoutSuccessPage() {
-  const router = useRouter();
-  const { items = [] } = useCart() || {};
-  const [paymentMethod, setPaymentMethod] = useState<string>('Cash on Delivery');
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const paymentMethod = searchParams.get('method')
+  const [countdown, setCountdown] = useState(10)
+  const [shouldRedirect, setShouldRedirect] = useState(false)
   
-  // Get payment method from URL or localStorage
+  // Handle countdown
   useEffect(() => {
-    // Try to get payment method from URL params or localStorage
-    const params = new URLSearchParams(window.location.search);
-    const method = params.get('method');
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          setShouldRedirect(true)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
     
-    if (method) {
-      switch(method) {
-        case 'cod':
-          setPaymentMethod('Cash on Delivery');
-          break;
-        case 'online':
-          setPaymentMethod('Online Payment');
-          break;
-        case 'upi':
-          setPaymentMethod('UPI Payment');
-          break;
-        default:
-          setPaymentMethod('Cash on Delivery');
-      }
-    } else {
-      // Try localStorage as fallback
-      const savedMethod = localStorage.getItem('paymentMethod');
-      if (savedMethod) {
-        setPaymentMethod(savedMethod);
-        localStorage.removeItem('paymentMethod'); // Clear after use
-      }
-    }
-  }, []);
+    return () => clearInterval(timer)
+  }, [])
   
-  // Redirect to home if accessed directly without checkout
+  // Handle redirect separately
   useEffect(() => {
-    if (items.length > 0) {
-      router.push('/checkout');
+    if (shouldRedirect) {
+      // Use window.location for a full page navigation instead of router.push
+      window.location.href = '/'
     }
-  }, [items, router]);
+  }, [shouldRedirect])
   
   return (
-    <div className="pt-20 pb-16 min-h-screen bg-neutral-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 p-6 md:p-8 rounded-lg shadow-sm text-center">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+    <div className="min-h-screen pt-20 pb-16 flex items-center justify-center bg-neutral-50 dark:bg-gray-900">
+      <div className="max-w-md w-full mx-auto p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div className="text-center">
+          {/* Inline SVG */}
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="h-16 w-16 text-green-500 mx-auto mb-4" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor" 
+            strokeWidth={1.5}
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+            />
+          </svg>
+          
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Order Placed Successfully!</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Thank you for your purchase. We've received your order and will process it right away.
+          </p>
+          
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md mb-6">
+            <p className="text-gray-700 dark:text-gray-300 mb-2">
+              <span className="font-medium">Payment Method:</span> {
+                paymentMethod === 'cod' ? 'Cash on Delivery' : 
+                paymentMethod === 'upi' ? 'UPI Payment' : 
+                paymentMethod
+              }
+            </p>
+            <p className="text-gray-700 dark:text-gray-300">
+              <span className="font-medium">Order Status:</span> Processing
+            </p>
           </div>
           
-          <h1 className="text-2xl md:text-3xl font-playfair mb-4 text-gray-900 dark:text-white">Order Placed Successfully!</h1>
-          
-          <p className="text-gray-600 dark:text-gray-300 mb-2">
-            Thank you for your order. We've received your order details and will process it shortly.
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            We've sent a confirmation email with your order details.
+            You can also track your order in your account.
           </p>
           
-          <p className="text-gray-600 dark:text-gray-300 mb-8">
-            <span className="font-medium dark:text-gray-200">Payment Method:</span> {paymentMethod}
-          </p>
-          
-          <div className="space-y-4">
+          <div className="flex flex-col space-y-3">
             <Link 
-              href="/products"
-              className="inline-block bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-md transition-colors"
+              href="/account/orders" 
+              className="inline-block w-full py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors text-center"
+            >
+              View My Orders
+            </Link>
+            
+            <Link 
+              href="/" 
+              className="inline-block w-full py-2 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors text-center"
             >
               Continue Shopping
             </Link>
-            
-            <div>
-              <Link 
-                href="/"
-                className="inline-block text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-medium"
-              >
-                Return to Home
-              </Link>
-            </div>
           </div>
+          
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
+            Redirecting to home page in {countdown} seconds...
+          </p>
         </div>
       </div>
     </div>
   )
 }
+
+

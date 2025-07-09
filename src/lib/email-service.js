@@ -41,6 +41,10 @@ class EmailService {
 
       const { email, ...templateParams } = params;
       
+      // Log the email parameters for debugging
+      console.log('Sending order confirmation email to:', email);
+      console.log('Order confirmation template params:', JSON.stringify(templateParams, null, 2));
+      
       const result = await this.resend.emails.send({
         from: this.fromEmail,
         to: email,
