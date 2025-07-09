@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { ShoppingBag, Package } from 'react-feather';
+import { RefreshCw } from 'lucide-react';
 
 export default function AdminSidebar() {
   const pathname = usePathname();
@@ -20,6 +21,16 @@ export default function AdminSidebar() {
       name: 'Orders',
       href: '/admin/orders',
       icon: ShoppingBag,
+    },
+    {
+      name: 'Cancelled Orders',
+      href: '/admin/orders/cancelled',
+      icon: ShoppingBag,
+    },
+    {
+      name: 'Returns',
+      href: '/admin/returns',
+      icon: RefreshCw,
     },
     {
       name: 'Stock Management',

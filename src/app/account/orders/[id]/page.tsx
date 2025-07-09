@@ -49,8 +49,45 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isReturning, setIsReturning] = useState(false);
   const unwrappedParams = use(params);
   const orderId = unwrappedParams.id;
+
+  const handleCancelOrder = async () => {
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+    
+    try {
+      setIsCancelling(true);
+      const response = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to cancel order');
+      }
+      
+      // Update the order status locally
+      setOrder(prev => prev ? {...prev, status: 'cancelled'} : null);
+      toast.success('Order cancelled successfully');
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel order');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const handleReturnOrder = async () => {
+    if (!confirm('Are you sure you want to initiate a return for this order?')) return;
+    
+    // Instead of submitting the return request directly,
+    // redirect to the dedicated return request page
+    router.push(`/account/orders/${orderId}/return`);
+  };
 
   useEffect(() => {
     // Redirect if not authenticated
@@ -117,9 +154,19 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'cancelled':
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'return_requested':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
+  };
+
+  const canCancelOrder = (status: string) => {
+    return ['pending', 'processing'].includes(status);
+  };
+
+  const canReturnOrder = (status: string) => {
+    return status === 'delivered';
   };
 
   return (
@@ -195,6 +242,43 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                   </div>
                 ))}
               </div>
+              
+              {/* Order action buttons */}
+              <div className="mt-4 flex flex-wrap gap-3">
+                {canCancelOrder(order.status) && (
+                  <button
+                    onClick={handleCancelOrder}
+                    disabled={isCancelling}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center"
+                  >
+                    {isCancelling ? (
+                      <>
+                        <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent mr-2"></div>
+                        Cancelling...
+                      </>
+                    ) : (
+                      'Cancel Order'
+                    )}
+                  </button>
+                )}
+                
+                {canReturnOrder(order.status) && (
+                  <button
+                    onClick={handleReturnOrder}
+                    disabled={isReturning}
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center"
+                  >
+                    {isReturning ? (
+                      <>
+                        <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      'Return Order'
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           
@@ -248,3 +332,9 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
     </div>
   );
 }
+
+
+
+
+
+
