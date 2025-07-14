@@ -20,7 +20,7 @@ const playfair = Playfair_Display({
 })
 
 export const metadata = {
-  title: 'TheNutriDry | Premium Dehydrated Products',
+  title: 'The NutriDry',
   description: 'Discover premium quality dehydrated fruits and vegetables that are 100% natural with no additives or preservatives.',
 }
 
