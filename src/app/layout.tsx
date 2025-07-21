@@ -7,6 +7,7 @@ import Footer from '@/components/layout/Footer'
 import Preloader from '@/components/layout/Preloader'
 import RecentPurchaseNotification from '@/components/RecentPurchaseNotification'
 import { Toaster } from 'react-hot-toast'
+import { Analytics } from "@vercel/analytics/next"
 import './globals.css'
 
 const inter = Inter({ 
@@ -46,6 +47,7 @@ export default function RootLayout({
             <Toaster position="bottom-right" />
           </CartProvider>
         </AuthProvider>
+         <Analytics />
       </body>
     </html>
   )
