@@ -20,14 +20,14 @@ import { emailService } from '@/lib/email-service';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { userId, addressId, paymentMethod, items, shippingCost } = body;
+    const { userId, addressId, paymentMethod, items, DeliveryCost } = body;
 
     console.log('Received order request:', { 
       userId, 
       addressId, 
       paymentMethod, 
       itemsLength: items?.length,
-      shippingCost 
+      DeliveryCost 
     });
     
     // Debug log to see what image URLs are coming in
@@ -65,7 +65,7 @@ export async function POST(request) {
       return total + (item.price * item.quantity);
     }, 0);
 
-    const total = subtotal + (shippingCost || 0);
+    const total = subtotal + (DeliveryCost || 0);
 
     // --- Create the Order in the Database ---
     const newOrder = await prisma.order.create({
@@ -76,7 +76,7 @@ export async function POST(request) {
         // Save the processed items with fixed image URLs
         items: processedItems,
         subtotal,
-        shippingCost: shippingCost || 0,
+        DeliveryCost: DeliveryCost || 0,
         total,
         status: 'pending', // Orders start as pending
       },

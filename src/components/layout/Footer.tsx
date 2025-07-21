@@ -14,6 +14,9 @@ export default function Footer() {
             height={50} 
             className="h-14 w-auto hover:opacity-80 transition-all duration-300"
           />
+         
+
+          
           <h2 className="text-xl font-bold mt-2">
             <span className="text-white">The</span>
             <span className="text-green-500">Nutri</span>
@@ -32,11 +35,18 @@ export default function Footer() {
                 height={64} 
                 className="h-16 w-auto hover:opacity-80 transition-all duration-300"
               />
-              <h2 className="text-xl font-bold mt-2">
+              <Image 
+                src="/logo1.svg" 
+                alt="TheNutriDry" 
+                width={180} 
+                height={64} 
+                className="h-16 w-auto hover:opacity-80 transition-all duration-300"
+              />
+              <h2 className="space-x-1 text-xl font-bold mt-2">
                 <span className="text-white">The</span>
-                <span className="text-green-500">Nutri</span>
-                <span className="text-amber-400">Dry</span>
+                <span className="text-green-500">NutriDry</span>
               </h2>
+               <p>A Brand by Al-Ahad Trading Company</p>
             </div>
             <p className="text-sm max-w-xs leading-relaxed">
               Premium dehydrated fruits and vegetables. 100% natural, preservative-free, and nutrient-rich.
@@ -73,10 +83,10 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-5 text-lg">Shop</h3>
             <ul className="space-y-3 text-sm">
               <FooterLink href="/products">All Products</FooterLink>
-              <FooterLink href="/products?category=Fruits">Fruits</FooterLink>
-              <FooterLink href="/products?category=Vegetables">Vegetables</FooterLink>
-              <FooterLink href="/products?category=Berries">Berries</FooterLink>
-              <FooterLink href="/products?category=Snacks">Snack Packs</FooterLink>
+              <FooterLink href="/products?limit=12&page=1&category=Fruits&cacheBust=1753109857841">Fruits</FooterLink>
+              <FooterLink href="/products?limit=12&page=1&category=Spices%20%26%20Herbs&cacheBust=1753109899837">Spices & Herbs</FooterLink>
+              <FooterLink href="/products?limit=12&page=1&category=Superfoods&cacheBust=1753109654421">Superfood</FooterLink>
+              <FooterLink href="/products?limit=12&page=1&category=Herbs%20%26%20Floral&cacheBust=1753109933413">Herbs & Floral</FooterLink>
             </ul>
           </div>
           
@@ -96,11 +106,12 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-5 text-lg">Customer Service</h3>
             <ul className="space-y-3 text-sm">
-              <FooterLink href="/shipping">Shipping & Returns</FooterLink>
+              <FooterLink href="/Delivery">Delivery & Returns</FooterLink>
               <FooterLink href="/warranty">Product Guarantee</FooterLink>
               <FooterLink href="/bulk-order">Bulk Orders</FooterLink>
               <FooterLink href="/refund-policy">Refund Policy</FooterLink>
               <FooterLink href="/terms">Terms of Service</FooterLink>
+              <FooterLink href="/privacy-policy">Privacy Policy</FooterLink>
             </ul>
           </div>
         </div>

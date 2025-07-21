@@ -301,7 +301,7 @@ export default function ContactPage() {
                       <option value="">Select a subject</option>
                       <option value="Product Inquiry">Product Inquiry</option>
                       <option value="Bulk Order">Bulk Order</option>
-                      <option value="Shipping Question">Shipping Question</option>
+                      <option value="Delivery Question">Delivery Question</option>
                       <option value="Feedback">Feedback</option>
                       <option value="Other">Other</option>
                     </select>
@@ -409,9 +409,9 @@ export default function ContactPage() {
             </div>
             
             <div className={`p-6 rounded-lg shadow-sm border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-              <h3 className={`text-lg font-medium mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Do you offer international shipping?</h3>
+              <h3 className={`text-lg font-medium mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Do you offer international Delivery?</h3>
               <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Yes, we ship to select international destinations. Shipping rates and delivery times vary by location. Please contact us for specific details.
+                Yes, we ship to select international destinations. Delivery rates and delivery times vary by location. Please contact us for specific details.
               </p>
             </div>
             

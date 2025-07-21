@@ -32,9 +32,9 @@ export default function CheckoutPage() {
   // Fixed payment method - COD only
   const paymentMethod = 'cod';
   
-  // Calculate shipping cost
-  const shippingCost = cartTotal >= 499 ? 0 : 99;
-  const orderTotal = cartTotal + shippingCost;
+  // Calculate Delivery cost
+  const DeliveryCost = cartTotal >= 499 ? 0 : 99;
+  const orderTotal = cartTotal + DeliveryCost;
   
   // Handle address selection from AddressManager
   const handleAddressSelect = (address: SavedAddress) => {
@@ -111,7 +111,7 @@ export default function CheckoutPage() {
         addressId: selectedAddress.id,
         paymentMethod,
         subtotal: cartTotal,
-        shippingCost,
+        DeliveryCost,
         total: orderTotal,
       };
       
@@ -151,11 +151,11 @@ export default function CheckoutPage() {
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Checkout</h1>
         
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Shipping Address Section */}
+          {/* Delivery Address Section */}
           <div className="lg:w-2/3">
             <div className="rounded-lg shadow-sm overflow-hidden mb-6 bg-white dark:bg-gray-800">
               <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">Shipping Address</h2>
+                <h2 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">Delivery Address</h2>
               </div>
               
               <div className="p-4 md:p-6">
@@ -226,11 +226,11 @@ export default function CheckoutPage() {
                     </div>
                     
                     <div className="flex justify-between">
-                      <span>Shipping</span>
-                      {shippingCost === 0 ? (
+                      <span>Delivery</span>
+                      {DeliveryCost === 0 ? (
                         <span className="italic text-xs md:text-sm">Free</span>
                       ) : (
-                        <span className="font-medium text-gray-900 dark:text-white">₹{shippingCost.toFixed(2)}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">₹{DeliveryCost.toFixed(2)}</span>
                       )}
                     </div>
                     

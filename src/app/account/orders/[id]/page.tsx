@@ -25,7 +25,7 @@ type Order = {
   addressId: string;
   paymentMethod: string;
   subtotal: number;
-  shippingCost: number;
+  DeliveryCost: number;
   total: number;
   status: string;
   createdAt: string;
@@ -284,7 +284,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h3 className="font-semibold mb-3 dark:text-white">Shipping Address</h3>
+              <h3 className="font-semibold mb-3 dark:text-white">Delivery Address</h3>
               <p className="font-medium dark:text-white">{order.address.name}</p>
               <p className="dark:text-gray-300">{order.address.address}, {order.address.locality}</p>
               <p className="dark:text-gray-300">{order.address.city}, {order.address.state} - {order.address.pincode}</p>
@@ -301,7 +301,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 order.paymentMethod
               }</p>
               <p className="dark:text-gray-300"><span className="text-gray-600 dark:text-gray-400">Subtotal:</span> ₹{order.subtotal.toFixed(2)}</p>
-              <p className="dark:text-gray-300"><span className="text-gray-600 dark:text-gray-400">Shipping:</span> {order.shippingCost === 0 ? 'Free' : `₹${order.shippingCost.toFixed(2)}`}</p>
+              <p className="dark:text-gray-300"><span className="text-gray-600 dark:text-gray-400">Delivery:</span> {order.DeliveryCost === 0 ? 'Free' : `₹${order.DeliveryCost.toFixed(2)}`}</p>
               <p className="font-medium mt-2 dark:text-white"><span className="text-gray-600 dark:text-gray-400">Total:</span> ₹{order.total.toFixed(2)}</p>
             </div>
           </div>

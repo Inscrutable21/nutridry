@@ -107,7 +107,7 @@ export default function SustainabilityPage() {
                 </p>
                 <ul className="list-disc pl-5 space-y-2">
                   <li>Biodegradable and compostable packaging materials</li>
-                  <li>Recyclable shipping materials made from post-consumer recycled content</li>
+                  <li>Recyclable Delivery materials made from post-consumer recycled content</li>
                   <li>Minimalist packaging design that reduces material usage</li>
                   <li>Bulk options that further decrease packaging-to-product ratio</li>
                   <li>Clear recycling instructions on all packaging</li>

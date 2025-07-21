@@ -28,7 +28,7 @@ class EmailService {
    * @param {string} params.email - Recipient email
    * @param {string} params.customerName - Customer's name
    * @param {Array} params.items - Order items
-   * @param {Object} params.address - Shipping address
+   * @param {Object} params.address - Delivery address
    * @param {string} params.orderId - Order ID
    * @param {number} params.total - Order total
    * @returns {Promise} Email send result

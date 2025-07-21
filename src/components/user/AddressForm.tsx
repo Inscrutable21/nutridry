@@ -209,7 +209,7 @@ export default function AddressForm({
   return (
     <div>
       <h3 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-        {editingAddressId ? 'Edit Address' : addresses.length > 0 ? 'Add New Address' : 'Enter Shipping Address'}
+        {editingAddressId ? 'Edit Address' : addresses.length > 0 ? 'Add New Address' : 'Enter Delivery Address'}
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

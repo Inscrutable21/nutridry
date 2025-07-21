@@ -27,8 +27,8 @@ export default function WarrantyPage() {
               <li>Returns are accepted within 30 days of delivery.</li>
               <li>Products must be unused, in their original packaging, and in the same condition you received them.</li>
               <li>To initiate a return, please contact our customer service team with your order number and reason for return.</li>
-              <li>Once your return is approved, we will provide instructions for shipping the item back.</li>
-              <li>Return shipping costs are the responsibility of the customer unless the return is due to our error (damaged or incorrect item).</li>
+              <li>Once your return is approved, we will provide instructions for Delivery the item back.</li>
+              <li>Return Delivery costs are the responsibility of the customer unless the return is due to our error (damaged or incorrect item).</li>
             </ul>
             
             <h3 className="text-xl font-medium text-gray-800 dark:text-white mt-6 mb-3">Refund Process</h3>

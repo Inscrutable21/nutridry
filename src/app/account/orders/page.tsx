@@ -21,7 +21,7 @@ type Order = {
   items: OrderItem[];
   paymentMethod: string;
   subtotal: number;
-  shippingCost: number;
+  DeliveryCost: number;
   total: number;
   status: string;
   createdAt: string;
@@ -184,7 +184,7 @@ export default function MyOrdersPage() {
                   </div>
                   
                   <div>
-                    <h4 className="font-medium mb-2 dark:text-white">Shipping</h4>
+                    <h4 className="font-medium mb-2 dark:text-white">Delivery</h4>
                     <p className="text-sm dark:text-gray-200">{order.address.name}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {order.address.city}, {order.address.state}

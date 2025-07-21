@@ -197,7 +197,7 @@ export function orderConfirmationTemplate(params) {
         </div>
         
         <div style="padding: 20px 0; border-bottom: 1px solid #e5e7eb;">
-          <div class="section-title">Shipping Address</div>
+          <div class="section-title">Delivery Address</div>
           <div class="address-box">
             ${formattedAddress}
           </div>

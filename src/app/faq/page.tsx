@@ -37,7 +37,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: "How do I place an order?",
-    answer: "Simply browse our products, add items to your cart, and proceed to checkout. You&apos;ll need to create an account or check out as a guest, enter shipping and payment information, and confirm your order.",
+    answer: "Simply browse our products, add items to your cart, and proceed to checkout. You&apos;ll need to create an account or check out as a guest, enter Delivery and payment information, and confirm your order.",
     category: "Ordering"
   },
   {
@@ -47,7 +47,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: "Can I modify or cancel my order after it&apos;s placed?",
-    answer: "You can modify or cancel your order within 2 hours of placing it by contacting our customer service team. After this window, orders are processed for shipping and cannot be modified or canceled.",
+    answer: "You can modify or cancel your order within 2 hours of placing it by contacting our customer service team. After this window, orders are processed for Delivery and cannot be modified or canceled.",
     category: "Ordering"
   },
   {
@@ -56,24 +56,24 @@ const faqs: FAQItem[] = [
     category: "Ordering"
   },
   {
-    question: "How long does shipping take?",
-    answer: "Standard shipping within India typically takes 3-5 business days. Express shipping options (1-2 business days) are available at checkout for an additional fee.",
-    category: "Shipping"
+    question: "How long does Delivery take?",
+    answer: "Standard Delivery within India typically takes 3-5 business days. Express Delivery options (1-2 business days) are available at checkout for an additional fee.",
+    category: "Delivery"
   },
   {
     question: "Do you ship internationally?",
-    answer: "Currently, we only ship within India. We&apos;re working on expanding our shipping capabilities to international destinations in the near future.",
-    category: "Shipping"
+    answer: "Currently, we only ship within India. We&apos;re working on expanding our Delivery capabilities to international destinations in the near future.",
+    category: "Delivery"
   },
   {
-    question: "How much does shipping cost?",
-    answer: "Shipping costs are calculated based on your location and the weight of your order. We offer free standard shipping on orders over ₹1000. You can see the exact shipping cost at checkout before completing your purchase.",
-    category: "Shipping"
+    question: "How much does Delivery cost?",
+    answer: "Delivery costs are calculated based on your location and the weight of your order. We offer free standard Delivery on orders over ₹1000. You can see the exact Delivery cost at checkout before completing your purchase.",
+    category: "Delivery"
   },
   {
     question: "Can I track my order?",
     answer: "Yes, once your order ships, you&apos;ll receive a confirmation email with tracking information. You can also log into your account on our website to track your order status.",
-    category: "Shipping"
+    category: "Delivery"
   },
   {
     question: "What is your return policy?",
@@ -130,7 +130,7 @@ export default function FAQPage() {
         <header className="mb-12 text-center">
           <h1 className="text-3xl md:text-5xl font-playfair mb-4 dark:text-white">Frequently Asked Questions</h1>
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Find answers to common questions about our products, ordering process, shipping, and more. Can't find what you're looking for? Contact us directly.
+            Find answers to common questions about our products, ordering process, Delivery, and more. Can't find what you're looking for? Contact us directly.
           </p>
         </header>
         

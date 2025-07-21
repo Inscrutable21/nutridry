@@ -121,7 +121,7 @@ model Order {
   addressId   String   @db.ObjectId
   paymentMethod String
   subtotal    Float
-  shippingCost Float
+  DeliveryCost Float
   total       Float
   status      String   // pending, processing, shipped, delivered, cancelled
   createdAt   DateTime @default(now())

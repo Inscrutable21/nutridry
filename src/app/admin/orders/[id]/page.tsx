@@ -25,7 +25,7 @@ type Order = {
   addressId: string;
   paymentMethod: string;
   subtotal: number;
-  shippingCost: number;
+  DeliveryCost: number;
   total: number;
   status: string;
   createdAt: string;
@@ -316,7 +316,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         </div>
         
         <div className="bg-gray-800 rounded-lg shadow-md p-6">
-          <h3 className="font-semibold mb-3 text-white">Shipping Address</h3>
+          <h3 className="font-semibold mb-3 text-white">Delivery Address</h3>
           <p className="text-white">{order.address.name}</p>
           <p className="text-white">{order.address.address}, {order.address.locality}</p>
           <p className="text-white">{order.address.city}, {order.address.state} - {order.address.pincode}</p>
@@ -362,8 +362,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             <span className="text-white">₹{order.subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between mb-2">
-            <span className="text-gray-300">Shipping</span>
-            <span className="text-white">{order.shippingCost === 0 ? 'Free' : `₹${order.shippingCost.toFixed(2)}`}</span>
+            <span className="text-gray-300">Delivery</span>
+            <span className="text-white">{order.DeliveryCost === 0 ? 'Free' : `₹${order.DeliveryCost.toFixed(2)}`}</span>
           </div>
           <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t border-gray-700">
             <span className="text-white">Total</span>
