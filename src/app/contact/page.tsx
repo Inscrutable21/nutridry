@@ -200,9 +200,11 @@ export default function ContactPage() {
                   <div className="ml-4">
                     <h3 className={`text-lg font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Location</h3>
                     <p className={`mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    122/3, Awadh Vihar Colony,<br />
-                    Near Amausi Intl. Airport,<br />
-                    Kanpur Road, Lucknow, 226023
+                    AL-AHAD TRADING COMPANY<br />
+                    (The NutriDry)<br />
+                    122/3, Shama Vihar Colony, Bagh No. 2,<br />
+                    Kanpur Road, Sarojini Nagar,<br />
+                    Lucknow – 226023 Uttar Pradesh, India
                     </p>
                   </div>
                 </div>

@@ -77,7 +77,12 @@ export default function Footer() {
               </div>
               <div>
                 <p className="font-medium text-amber-400">Location</p>
-                <p className="leading-relaxed">122/3, Awadh Vihar Colony, Near Amausi Intl. Airport, Kanpur Road, Lucknow, 226023</p>
+                <p className="leading-relaxed">AL-AHAD TRADING COMPANY
+(The NutriDry)
+122/3, Shama Vihar Colony, Bagh No. 2,
+Kanpur Road, Sarojini Nagar,
+Lucknow – 226023
+Uttar Pradesh, India</p>
               </div>
             </div>
           </div>
