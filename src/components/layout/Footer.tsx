@@ -14,14 +14,18 @@ export default function Footer() {
             height={50} 
             className="h-14 w-auto hover:opacity-80 transition-all duration-300"
           />
-         
-
-          
-          <h2 className="text-xl font-bold mt-2">
+            <Image 
+                src="/logo1.svg" 
+                alt="TheNutriDry" 
+                width={180} 
+                height={64} 
+                className="h-16 w-auto hover:opacity-80 transition-all duration-300"
+              />
+          <h2 className="space-x-2 text-xl font-bold mt-2">
             <span className="text-white">The</span>
-            <span className="text-green-500">Nutri</span>
-            <span className="text-amber-400">Dry</span>
+            <span className="text-green-500">NutriDry</span>
           </h2>
+          <p>A Brand by Al-Ahad Trading Company</p>
         </div>
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
