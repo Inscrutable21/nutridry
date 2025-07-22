@@ -58,7 +58,7 @@ export default function WarrantyPage() {
             <h3 className="text-xl font-medium text-gray-800 dark:text-white mt-6 mb-3">Exchanges</h3>
             
             <p className="mb-4 text-gray-700 dark:text-gray-300">
-              We are happy to exchange products within 30 days of purchase. To request an exchange, please contact our customer service team with your order number and the item you wish to exchange.
+              We are happy to exchange products within 7 days of purchase. To request an exchange, please contact our customer service team with your order number and the item you wish to exchange.
             </p>
             
             <h3 className="text-xl font-medium text-gray-800 dark:text-white mt-6 mb-3">Contact Us</h3>
