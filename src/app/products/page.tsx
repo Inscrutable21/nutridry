@@ -33,7 +33,7 @@ interface Product {
   salePrice?: number;
 }
 
-const categories = ['All', 'Fruits', 'Vegetables', 'Spices & Herbs', 'Superfoods', 'Herbs & Floral', 'Herbs & Tea', 'Spices & Seasonings']
+const categories = ['All', 'Fruits', 'Vegetables', 'Spices & Herbs', 'Superfoods', 'Herbs & Floral', 'Spices & Seasonings']
 const sortOptions = [
   { value: 'featured', label: 'Featured' },
   { value: 'price-low', label: 'Price: Low to High' },

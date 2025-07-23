@@ -13,7 +13,7 @@ export default function RefundPolicyPage() {
           <h1 className="text-3xl md:text-4xl font-playfair mb-6 text-gray-900 dark:text-white">Privacy Policy</h1>
           
           <div className="prose prose-green max-w-none dark:prose-invert">
-            <p className="text-gray-700 dark:text-gray-300">At The NutriDry, your privacy is a top priority. This Privacy Policy explains how we collect, use, store, and protect your personal data when you visit www.thenutridry.com or make a purchase from our website. By accessing or using our website, you agree to the terms of this Privacy Policy..</p>
+            <p className="text-gray-700 dark:text-gray-300">At The NutriDry, your privacy is a top priority. This Privacy Policy explains how we collect, use, store, and protect your personal data when you visit <a href="https://www.thenutridry.com/" className="text-amber-600 hover:text-amber-800 dark:text-amber-500 dark:hover:text-amber-400">https://www.thenutridry.com/</a> or make a purchase from our website. By accessing or using our website, you agree to the terms of this Privacy Policy.</p>
             
             <h2 className="text-xl font-semibold mt-8 mb-4 text-gray-800 dark:text-white">Information We Collect</h2>
             <p className="text-gray-700 dark:text-gray-300">When you interact with our website, we may collect the following types of personal information:</p>

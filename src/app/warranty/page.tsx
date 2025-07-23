@@ -12,19 +12,19 @@ export default function WarrantyPage() {
             <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Our Warranty Policy</h2>
             
             <p className="mb-4 text-gray-700 dark:text-gray-300">
-              At TheNutriDry, we stand behind the quality of our products. Our warranty and returns policies are designed to ensure your complete satisfaction with your purchase.
+              At The NutriDry, we stand behind the quality of our products. Our warranty and returns policies are designed to ensure your complete satisfaction with your purchase.
             </p>
             
             <h3 className="text-xl font-medium text-gray-800 dark:text-white mt-6 mb-3">Product Quality Guarantee</h3>
             
             <p className="mb-4 text-gray-700 dark:text-gray-300">
-              All TheNutriDry products are backed by our quality guarantee. We guarantee that our products will arrive in good condition and match the description provided on our website. If your product doesn&apos;t meet these standards, we will replace it or offer a refund according to our return policy.
+              All The NutriDry products are backed by our quality guarantee. We guarantee that our products will arrive in good condition and match the description provided on our website. If your product doesn&apos;t meet these standards, we will replace it or offer a refund according to our return policy.
             </p>
             
             <h3 className="text-xl font-medium text-gray-800 dark:text-white mt-6 mb-3">Return Policy</h3>
             
             <ul className="list-disc pl-5 mb-4 space-y-2 text-gray-700 dark:text-gray-300">
-              <li>Returns are accepted within 30 days of delivery.</li>
+              <li>Returns are accepted within 7 days of delivery.</li>
               <li>Products must be unused, in their original packaging, and in the same condition you received them.</li>
               <li>To initiate a return, please contact our customer service team with your order number and reason for return.</li>
               <li>Once your return is approved, we will provide instructions for Delivery the item back.</li>

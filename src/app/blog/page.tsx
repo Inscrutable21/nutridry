@@ -80,27 +80,23 @@ export default function BlogPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {blogPosts.map((post) => (
             <article key={post.id} className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <Link href={`/blog/${post.slug}`}>
-                <div className="relative h-48 w-full">
-                  <Image 
-                    src={post.image} 
-                    alt={post.title}
-                    fill
-                    style={{objectFit: 'cover'}}
-                    className="transition-transform hover:scale-105 duration-500"
-                  />
-                </div>
-              </Link>
+              <div className="relative h-48 w-full">
+                <Image 
+                  src={post.image} 
+                  alt={post.title}
+                  fill
+                  style={{objectFit: 'cover'}}
+                  className="transition-transform hover:scale-105 duration-500"
+                />
+              </div>
               <div className="p-6">
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                   <span>{post.date}</span>
                   <span className="mx-2">•</span>
                   <span className="text-amber-600">{post.category}</span>
                 </div>
-                <h2 className="text-xl font-semibold mb-2 hover:text-amber-600 transition-colors text-gray-900 dark:text-white">
-                  <Link href={`/blog/${post.slug}`}>
-                    {post.title}
-                  </Link>
+                <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                  {post.title}
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300">{post.excerpt}</p>
               </div>
