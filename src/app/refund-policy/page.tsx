@@ -13,7 +13,7 @@ export default function RefundPolicyPage() {
           <h1 className="text-3xl md:text-4xl font-playfair mb-6 text-gray-900 dark:text-white">Refund policy</h1>
           
           <div className="prose prose-green max-w-none dark:prose-invert">
-            <p className="text-gray-700 dark:text-gray-300">The NUtridry operates under AL AHAD TRADING COMPANY and is committed to ensuring customer satisfaction. If you are not entirely satisfied with your purchase, we&apos;re here to help.</p>
+            <p className="text-gray-700 dark:text-gray-300">The Nutridry operates under AL AHAD TRADING COMPANY and is committed to ensuring customer satisfaction. If you are not entirely satisfied with your purchase, we&apos;re here to help.</p>
             
             <h2 className="text-xl font-semibold mt-8 mb-4 text-gray-800 dark:text-white">Refunds</h2>
             <p className="text-gray-700 dark:text-gray-300">To be eligible for a refund, your item must be unused and in the same condition that you received it. It must also be in the original packaging.</p>

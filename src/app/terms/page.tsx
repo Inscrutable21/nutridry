@@ -14,7 +14,7 @@ export default function TermsOfServicePage() {
           <h1 className="text-3xl md:text-4xl font-playfair mb-6 text-gray-900 dark:text-white">Terms of service</h1>
           
           <div className="prose prose-green max-w-none prose-headings:font-playfair prose-p:text-gray-700 dark:prose-invert">
-            <p>The use of any product, service, or feature (the Materials) available through the internet website accessible at the website (www.theNutriDry.com) by any user of the Website (You or Your hereafter) shall be governed by the following terms of use</p>
+            <p>The use of any product, service, or feature (the Materials) available through the internet website accessible at the website (<a href="https://www.thenutridry.com/" className="text-amber-600 hover:text-amber-800 dark:text-amber-500 dark:hover:text-amber-400">https://www.thenutridry.com/</a>) by any user of the Website (You or Your hereafter) shall be governed by the following terms of use</p>
             
             <p>This website is supplied and owned by AL AHAD TRADING COMPANY on behalf of ourselves and our affiliate partners (TheNutriDry, &quot;we&quot;, &quot;our&quot; or &quot;us&quot;).</p>
             
